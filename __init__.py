@@ -3,7 +3,6 @@ import os
 from flask import Flask, render_template
 from flaskr.blueprint import train, home, display, mask_rcnn, condinst
 
-
 def create_app():
     # create and configure the app
     app = Flask(__name__)
