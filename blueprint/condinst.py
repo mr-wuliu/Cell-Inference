@@ -91,7 +91,7 @@ def training():
 @bp.route('/result')
 def result():
     json_list = get_data()
-    line_chart = generate_line_chart(json_list)
+    line_chart = generate_line_chart(json_list,'loss','Loss','Loss')
     plot = Markup(line_chart.render_embed())
     return render_template('condinst/result.html', line_chart=plot, model=model)
 
