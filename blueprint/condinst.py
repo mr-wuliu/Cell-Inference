@@ -51,20 +51,107 @@ def get_data() -> list:
     return json_list
 
 
-def generate_line_chart(json_list, key, graph_title, line_title) -> Line:
+def generate_lr_chart(json_list) -> Line:
     y_data = []
     x_data = []
-    # 从list中取出学习率作为y轴
     for d in json_list:
-        if key in d:
-            y_data.append(d[key])
+        if 'lr' in d:
+            y_data.append(d['lr'])
             x_data.append(d['step'])
     line = (
-        Line()
-        .add_xaxis(x_data)
-        .add_yaxis(line_title, y_data)
-        .set_global_opts(title_opts=opts.TitleOpts(title=graph_title))
+        Line().add_xaxis(x_data)
+        .add_yaxis('Learning Rate', y_data)
     )
+    # change size
+    line.width = '100%'
+    return line
+
+
+def generate_loss_chart(json_list) -> Line:
+    x_data = []
+    y_data = []
+    y_cls_data = []
+    y_bbox_data = []
+    y_mask_data = []
+    y_centerness_data = []
+    for d in json_list:
+        if 'loss' in d:
+            y_data.append(d['loss'])
+            y_cls_data.append(d['loss_cls'])
+            y_bbox_data.append(d['loss_bbox'])
+            y_mask_data.append(d['loss_mask'])
+            y_centerness_data.append(d['loss_centerness'])
+            x_data.append(d['step'])
+    line = (
+        Line().add_xaxis(x_data)
+        .add_yaxis('loss', y_data)
+        .add_yaxis('loss_cls', y_cls_data)
+        .add_yaxis('loss_bbox', y_bbox_data)
+        .add_yaxis('loss_mask', y_mask_data)
+        .add_yaxis('loss_centerness', y_centerness_data)
+    )
+    # change size
+    line.width = '100%'
+    return line
+
+
+def generate_bbox_map_chart(json_list) -> Line:
+    x_data = ['10000', '20000', '30000', '40000', '50000', '60000', '70000', '80000', '90000']
+    y_bbox_map_data = []
+    y_bbox_map50_data = []
+    y_bbox_map75_data = []
+    y_bbox_map_small_data = []
+    y_bbox_map_medium_data = []
+    y_bbox_map_large_data = []
+    for d in json_list:
+        if 'coco/bbox_mAP' in d:
+            y_bbox_map_data.append(d['coco/bbox_mAP'])
+            y_bbox_map50_data.append(d['coco/bbox_mAP_50'])
+            y_bbox_map75_data.append(d['coco/bbox_mAP_75'])
+            y_bbox_map_small_data.append(d['coco/bbox_mAP_s'])
+            y_bbox_map_medium_data.append(d['coco/bbox_mAP_m'])
+            y_bbox_map_large_data.append(d['coco/bbox_mAP_l'])
+    line = (
+        Line().add_xaxis(x_data)
+        .add_yaxis('mAP', y_bbox_map_data)
+        .add_yaxis('mAP_50', y_bbox_map50_data)
+        .add_yaxis('mAP_75', y_bbox_map75_data)
+        .add_yaxis('mAP_s', y_bbox_map_small_data)
+        .add_yaxis('mAP_m', y_bbox_map_medium_data)
+        .add_yaxis('mAP_l', y_bbox_map_large_data)
+    )
+    # change size
+    line.width = '100%'
+    return line
+
+
+def generate_seg_map_chart(json_list) -> Line:
+    x_data = ['10000', '20000', '30000', '40000', '50000', '60000', '70000', '80000', '90000']
+    y_seg_map_data = []
+    y_seg_map50_data = []
+    y_seg_map75_data = []
+    y_seg_map_small_data = []
+    y_seg_map_medium_data = []
+    y_seg_map_large_data = []
+    for d in json_list:
+        if 'coco/segm_mAP' in d:
+            y_seg_map_data.append(d['coco/segm_mAP'])
+            y_seg_map50_data.append(d['coco/segm_mAP_50'])
+            y_seg_map75_data.append(d['coco/segm_mAP_75'])
+            y_seg_map_small_data.append(d['coco/segm_mAP_s'])
+            y_seg_map_medium_data.append(d['coco/segm_mAP_m'])
+            y_seg_map_large_data.append(d['coco/segm_mAP_l'])
+    line = (
+        Line().add_xaxis(x_data)
+        .add_yaxis('mAP', y_seg_map_data)
+        .add_yaxis('mAP_50', y_seg_map50_data)
+        .add_yaxis('mAP_75', y_seg_map75_data)
+        .add_yaxis('mAP_s', y_seg_map_small_data)
+        .add_yaxis('mAP_m', y_seg_map_medium_data)
+        .add_yaxis('mAP_l', y_seg_map_large_data)
+    )
+    # change size
+    line.width = '100%'
     return line
 
 
@@ -91,9 +178,16 @@ def training():
 @bp.route('/result')
 def result():
     json_list = get_data()
-    line_chart = generate_line_chart(json_list,'loss','Loss','Loss')
-    plot = Markup(line_chart.render_embed())
-    return render_template('condinst/result.html', line_chart=plot, model=model)
+    loss = generate_loss_chart(json_list)
+    loss_plot = Markup(loss.render_embed())
+    lr = generate_lr_chart(json_list)
+    lr_plot = Markup(lr.render_embed())
+    bbox_map = generate_bbox_map_chart(json_list)
+    bbox_map_plot = Markup(bbox_map.render_embed())
+    seg_map = generate_seg_map_chart(json_list)
+    seg_map_plot = Markup(seg_map.render_embed())
+    return render_template('condinst/result.html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
+                           seg_map=seg_map_plot, model=model)
 
 
 """
