@@ -46,4 +46,7 @@ def inference(config_file:str, checkpoint_file:str,
     img_stream = Image.fromarray(img_npy.astype('uint8')).convert('RGB')
     img_stream.save(os.path.join(cache_path,'inf_'+img_key+'.png'))
 
+if __name__ == '__main__':
+    import mmselfsup
 
+    print(mmselfsup.__version__)
