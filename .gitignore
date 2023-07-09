@@ -2,3 +2,14 @@ blueprint/__pycache__/*
 /static/model/*
 /cache/
 __pycache__/*
+.idea/flaskr.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+blueprint/__pycache__/__init__.cpython-38.pyc
+blueprint/__pycache__/condinst.cpython-38.pyc
+blueprint/__pycache__/display.cpython-38.pyc
+blueprint/__pycache__/home.cpython-38.pyc
+blueprint/__pycache__/mask_rcnn.cpython-38.pyc
+blueprint/__pycache__/train.cpython-38.pyc
