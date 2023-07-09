@@ -1,11 +1,19 @@
 import json
+import os
 
 import mmcv
+import numpy as np
+import torch
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 import pyecharts.options as opts
 from jinja2 import Markup
+from matplotlib import pyplot as plt
+from mmcv import Compose, ToTensor, Normalize
+from mmdet.apis import init_detector
+from mmdet.models import CondInst
+from mmengine.visualization import Visualizer
 from pyecharts.charts import Line
 from pyecharts.faker import Faker
 
@@ -22,14 +30,14 @@ class model:
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/condinst_r101_fpn_1x_coco.py'
+config_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.py'
 checkpoint_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.90000.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
 # pyecharts配置
 REMOTE_HOST = "https://pyecharts.github.io/assets/js"
-
+network_model = init_detector(config_file, checkpoint_file, device='cpu')
 """
 定义画图方法
 """
@@ -155,6 +163,46 @@ def generate_seg_map_chart(json_list) -> Line:
     return line
 
 
+def _forward(x):
+    conv1 = network_model.backbone.conv1(x)
+    bn1 = network_model.backbone.bn1(conv1)
+
+    layer1 = network_model.backbone.layer1(bn1)
+    layer2 = network_model.backbone.layer2(layer1)
+    layer3 = network_model.backbone.layer3(layer2)
+    layer4 = network_model.backbone.layer4(layer3)
+
+    return conv1, bn1, layer1, layer2, layer3, layer4
+
+
+def preprocess_img(img,
+                   mean=[0.485, 0.456, 0.406],
+                   std=[0.229, 0.224, 0.225]):
+    image_norm = np.float32(img) / 255
+    preprocessing = Compose([
+        ToTensor(),
+        Normalize(mean=mean, std=std)
+    ])
+    tensor = preprocessing(image_norm.copy()).unsqueeze(0)
+    return tensor
+
+
+def draw_feature():
+    md = network_model
+    md.forward = _forward
+    visualizer = Visualizer()
+    img = "cache/urlmCKGR9WyV.png"
+    img = mmcv.imread(os.path.join(img),
+                      channel_order='rgb')
+    input_tensor = preprocess_img(img)
+    features = md(img)
+    feat = md(input_tensor)[0]
+    input_data = visualizer.draw_featmap(feat, channel_reduction='select_max')
+    feature_map = features.squeeze().detach().numpy()  # 转换特征图为可处理的数组
+    plt.imshow(feature_map, cmap='hot')
+    plt.colorbar()
+    plt.title('Feature Map')
+    plt.show()
 """
 页面展示
 """

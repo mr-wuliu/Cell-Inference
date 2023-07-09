@@ -1,30 +1,116 @@
 {% extends 'condinst/condinst_base.html' %}
 
 {% block main %}
-    <div class="col-lg-6">
-        <h1 class="page-header">Loss</h1>
-        <div id="lr">
-            {{ losses|safe }}
+
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">CondInst Loss</h3>
+            </div>
+            <div id="loss">
+                {{ losses|safe }}
+            </div>
         </div>
     </div>
     <div class="col-lg-6">
-        <h1 class="page-header">Learning Rate</h1>
-        <div id="lr">
-            {{ lr|safe }}
+        <div class="card">
+            <div id="carouselExampleIndicators" class="carousel slide">
+                <div class="card-body">
+                <h5 class="card-title">特征叠加原图——特征图</h5>
+            </div>
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0"
+                            class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+                            aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
+                            aria-label="Slide 3"></button>
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="3"
+                            aria-label="Slide 4"></button>
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="4"
+                            aria-label="Slide 5"></button>
+                </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="{{ url_for('static', filename='img/features/condinst/combine1.png') }}"
+                             class="d-block w-100" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='img/features/condinst/combine2.png') }}"
+                             class="d-block w-100" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='img/features/condinst/combine3.png') }}"
+                             class="d-block w-100" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='img/features/condinst/combine4.png') }}"
+                             class="d-block w-100" alt="...">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='img/features/condinst/combine5.png') }}"
+                             class="d-block w-100" alt="...">
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">bbox mAP</h3>
+            </div>
+            <div id="bbox_mAP">
+                {{ bbox_map|safe }}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Learning Rate</h3>
+            </div>
+            <div id="lr">
+                {{ lr|safe }}
+            </div>
         </div>
     </div>
     <div class="col-lg-6">
-        <h1 class="page-header">bbox mAP</h1>
-        <div id="acc">
-            {{ bbox_map|safe }}
+        <div class="card">
+            <img
+                    src="{{ url_for('static', filename='img/t_sne/condinst.png') }}"
+                    class="card-img-top"
+                    alt="Waterfall"/>
+            <div class="card-body">
+                <h5 class="card-title">CondInst T-SNE图</h5>
+                <p class="card-text">
+                    数据集经过CondInst 模型推导, 获取其特征并使用T-SNE降维可视化.
+                </p>
+                {#                <a href="#!" class="btn btn-primary">重新生成</a>#}
+            </div>
         </div>
     </div>
-    <div class="col-lg-6">
-        <h1 class="page-header">segm mAP</h1>
-        <div id="map">
-            {{ seg_map|safe }}
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">segm mAP</h3>
+            </div>
+            <div id="map">
+                {{ seg_map|safe }}
+            </div>
         </div>
     </div>
+
 {% endblock %}
 
 {#{% block slef_js %}#}
