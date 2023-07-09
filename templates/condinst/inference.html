@@ -1,73 +1,34 @@
-{% extends 'condinst/condinst_base.html' %}
+{% extends 'mask_rcnn/mask_rcnn_base.html' %}
 
 {% block main %}
 
     <div class="col-lg-6 col-md-6 mb-4">
         <div class="image-container">
-            <img id="upload_img" class="img-fluid" width="512" height="512" src="{{ url_for('static',filename='img/test.png') }}" alt="Image 1">
+            <img id="upload_img" class="img-fluid" width="512" height="512"
+                 src="{{ url_for('static',filename='img/choose_pic.png') }}" alt="Image 1">
             <input class="file-upload" style="display: none" type="file" accept="image/*" name="upload_img"/>
         </div>
     </div>
 
     <div class="col-lg-6 col-md-6 mb-4">
         <div class="image-container">
-            <img id="download_img" class="img-fluid" width="512" height="512" src="{{ url_for('static',filename='img/test.png') }}" alt="Image 2">
+            <img id="download_img" class="img-fluid" width="512" height="512"
+                 src="{{ url_for('static',filename='img/result.png') }}" alt="Image 2">
         </div>
     </div>
 
-    <button type="button" class="btn btn-primary " id="btn_upload" >上传文件</button><!--mx-auto -->
-    <button id="btn_download" class="btn btn-primary" type="button">请求图片</button>
 
-    <form method="POST" role="form" action="/upload" enctype="multipart/form-data">
-
-
-        <label for="input-6a">Input Group</label>
-        <div class="file-loading">
-            <input id="input-b6a" name="input-b6a[]" type="file" accept="image/*" multiple>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5 d-flex justify-content-end">
+                <button type="button" class="btn btn-primary " id="btn_upload">上传文件</button><!--mx-auto -->
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-6">
+                <button id="btn_download" class="btn btn-primary" type="button">请求图片</button>
+            </div>
         </div>
-    </form>
-    <img id="img_row" src="data:;base64,{{ img_row }}" width="512" height="512">
-    <img id="inference" src="data:;base64,{{ img }}" width="512" height="512">
-
-    <button id="fetch-button">请求图片</button>
-    <h2 id="result"></h2>
-
-{#    <script>#}
-{#        $(document).ready(function () {#}
-{#            $("#input-b6a").fileinput({#}
-{#                allowedFileExtensions: ['jpg', 'png', 'gif'],#}
-{#                uploadAsync: false,#}
-{#                overwriteInitial: false,#}
-{#                minFileCount: 1,#}
-{#                maxFileCount: 5,#}
-{#                initialPreviewAsData: true // identify if you are sending pre#}
-{#            });#}
-{##}
-{#        });#}
-{#        //#}
-{#        $(document).ready(function () {#}
-{#            // 按钮点击事件处理程序#}
-{#            $('#fetch-button').click(function () {#}
-{#                var img = ''#}
-{#                var img_row = ''#}
-{#                $.ajax({#}
-{#                    type: "POST",#}
-{#                    url: "/getimg",#}
-{#                    async: false,#}
-{#                    success: function (res) {#}
-{#                        img = res['img']#}
-{#                        img_row = res['img_row']#}
-{#                    }#}
-{#                });#}
-{#                $("#img_row").attr("src", "data:;base64," + img_row);#}
-{#                $("#inference").attr("src", "data:;base64," + img);#}
-{#                return {'img': img, 'img_row': img_row}#}
-{##}
-{#            });#}
-{#        });#}
-{##}
-{##}
-{#    </script>#}
+    </div>
 
 {% endblock %}
 
