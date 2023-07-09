@@ -44,9 +44,7 @@ def inference(config_file:str, checkpoint_file:str,
     img_npy = visualizer.get_image()[..., ::-1]
     from PIL import Image
     img_stream = Image.fromarray(img_npy.astype('uint8')).convert('RGB')
-    img_stream.save(os.path.join(cache_path,'inf_'+img_key+'.png'))
+    img_stream.save(os.path.join(cache_path,'inf_-'+img_key+'.png'))
 
 if __name__ == '__main__':
-    import mmselfsup
-
-    print(mmselfsup.__version__)
+    pass
