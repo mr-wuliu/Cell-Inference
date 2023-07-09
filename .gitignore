@@ -1,2 +1,4 @@
-/static/model/
+blueprint/__pycache__/*
+/static/model/*
 /cache/
+__pycache__/*

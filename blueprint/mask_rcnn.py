@@ -2,13 +2,16 @@ import mmcv
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
-# from flaskr.utils import create_key
 import flaskr.utils as utils
 import os
+import subprocess
+
 
 # 注册蓝图
 bp = Blueprint('mask_rcnn', __name__)
 
+# 创建子进程列表，用于保存正在执行的子进程对象
+processes = []
 
 # 定义单个模型的路由
 class model:
@@ -39,12 +42,18 @@ def inference():
 
 @bp.route('/training')
 def training():
-    return 'training'
+    # 模型启停
 
+    return 'training'
 
 @bp.route('/result')
 def result():
-    return 'result'
+    # 加载配置
+    if request.method == 'GET':
+        num_class = 5
+    
+    return render_template('mask_rcnn/result.html', model=model)
+
 
 
 """
@@ -94,3 +103,24 @@ def img_inference_res():
 
         return img_stream
     return 'error'
+
+@bp.route('/start_train',methods=['GET','POST'])
+def train_start():
+    if request.method == 'POST':
+        """
+        python .\tools\train.py .\configs\mask_rcnn\mask-rcnn_r101_fpn_ms-poly-3x_coco.py --work-dir mask_rcnn_3x_train
+        """
+
+        model_key = utils.create_key()
+        script = 'mmdetection/tools/train.py'
+
+        # script = '/flaskr/static/model/mask-rcnn_r101_fpn_ms-poly-3x_coco.py'
+        args = ['flaskr/static/model/mask-rcnn_r101_fpn_ms-poly-3x_coco.py',
+                '--word-dir', cache_path + '/work_dir_'+model_key]
+        process = subprocess.Popen(['python', script] + args )
+        processes.append(process)
+        return model_key
+
+@bp.route('/stop_train',methods=['GET','POST'])
+def train_end():
+    pass

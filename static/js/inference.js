@@ -18,33 +18,6 @@ $(document).on("click","#upload_img", function () {
 
     });
 });
-// 点击按钮上传图片
-// $(document).on("click", "#btn", function () {
-//     var imgFile = new FileReader()
-//     // 获取图片元素
-//     var image = $("#upload_img")[0].src;
-//     // 创建一个FormData对象, 并将图片添加到其中
-//     var formData = new FormData();
-//     formData.append('image', image)
-//
-//     //发起请求
-//     //获取当前模型的路径
-//     var currentURL = window.location.href;
-//     var pathParts = currentURL.split('/');
-//     var model_path = pathParts[3];
-//     $.ajax = function (model_path, formData) {
-//         $.ajax
-//         ({
-//             url: '/' + model_path.toString() + '/data_handel',
-//             type: 'POST',
-//             data: formData,
-//             async: false,
-//             success: function (res) {
-//                 alert('图片上传成功');
-//             }
-//         });
-//     }
-// });
 
 $(document).ready(function() {
   // 绑定按钮点击事件: 上传
