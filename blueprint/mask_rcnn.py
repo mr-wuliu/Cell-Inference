@@ -94,6 +94,7 @@ def training():
                 lines[i] = 'set_batch_size=' + str(arguments['batch_size']) + '\n'
             if lines[i].startswith('# end var'):
                 lines[i] = ''
+                break
         # 写入新的 Python 文件
         config = 'flaskr/static/model/config/train_' + key + '.py'
         output = os.path.join(cache_path, 'work_dir_' + key)
@@ -117,9 +118,6 @@ def training():
         process = subprocess.Popen(['python', script] + args,
                                    stdout=log,
                                    stderr=log)
-        # stdout, stderr = process.communicate()
-        # res = stdout.decode('utf-8')
-        # output, error = process.communicate()
         processes[key] = process
         return render_template('mask_rcnn/training_processing.html', model=model, key=key)
 
