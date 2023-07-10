@@ -47,7 +47,7 @@
 {% block sidebar %}
 <div class="offcanvas offcanvas-start w-25 bg-dark text-light" tabindex="-1" id="offcanvas" data-bs-keyboard="false" data-bs-backdrop="false">
     <div class="offcanvas-header">
-        <h6 class="offcanvas-title d-none d-sm-block" id="offcanvas">菜单</h6>
+        <h6 class="offcanvas-title d-none d-sm-block">菜单</h6>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body px-0 bg-dark text-light">
@@ -59,7 +59,8 @@
                 </a>
             </li>
             <li>
-                <a href="{{ url_for(model.training) }}" data-bs-toggle="collapse" class="nav-link text-light">
+            <!-- data-bs-toggle="collapse"-->
+                <a href="{{ url_for(model.training) }}" class="nav-link text-light">
                     <i class="fs-5 bi-speedometer2"></i><span class="ms-1 d-none d-sm-inline">模型训练</span> </a>
             </li>
             <li>
@@ -96,7 +97,7 @@
 </div>
 <div class="container-fluid">
     <div class="row">
-        <div class="col min-vh-100 py-3">
+        <div class="col min-vh-99 py-3">
             <button class="btn float-end" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" role="button">
                 <i class="bi bi-arrow-right-square-fill fs-3" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"></i>
             </button>

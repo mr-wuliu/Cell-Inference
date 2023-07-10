@@ -44,7 +44,7 @@ network_model = init_detector(config_file, checkpoint_file, device='cpu')
 
 
 def get_data() -> list:
-    path = 'mmdetection/condinst_r101/20230703_104440/vis_data/scalars.json'
+    path = 'mmdetection/condinst_r101/20230703_104440/vis_data/ars.json'
     json_list = []
     with open(path, 'r') as f:
         for line in f:
@@ -234,7 +234,7 @@ def result():
     bbox_map_plot = Markup(bbox_map.render_embed())
     seg_map = generate_seg_map_chart(json_list)
     seg_map_plot = Markup(seg_map.render_embed())
-    return render_template('condinst/result.html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
+    return render_template('condinst/ .html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, model=model)
 
 

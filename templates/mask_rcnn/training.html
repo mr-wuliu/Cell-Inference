@@ -2,5 +2,60 @@
 
 {% block main %}
 
+    <div class="card-body p-4 p-md-5">
+        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5 px-md-2">模型参数设置</h3>
+        <form class="px-md-2" method="POST">
+            {#            <div class="form-outline mb-4">#}
+            {#                <label class="form-label">num_classes</label>#}
+            {#                <input type="text" class="form-control"#}
+            {#                       name="username"#}
+            {#                       placeholder="Enter Username"/>#}
+            {#            </div>#}
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label datepicker">num_classes</label>
+                    <div class="form-outline">
+                        <input type="text" class="form-control"
+                               name="num_classes"
+                               placeholder="Enter num_classes"
+                        />
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label class="form-label datepicker">初始学习率</label>
+                    <div class="form-outline">
+                        <input type="text" class="form-control"
+                               name="lr"
+                               placeholder="Enter learning rate"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label datepicker">num_workers</label>
+                    <input type="text" class="form-control"
+                           name="num_workers"
+                           placeholder="Enter num_workers"/>
+                </div>
+{#            </div>#}
+{##}
+{##}
+{#            <div class="row">#}
+                <div class="col-md-6 mb-4">
+                    <div class="form-outline datepicker">
+                        <label class="form-label">batch_size</label>
+                        <input type="text" class="form-control"
+                               name="batch_size"
+                               placeholder="Enter your batch_size"
+                        />
+                    </div>
+                </div>
+            </div>
 
+
+            {#        </div>#}
+            <button type="submit" class="btn btn-success btn-lg mb-1 mt-3">Submit</button>
+        </form>
+    </div>
 {% endblock %}
