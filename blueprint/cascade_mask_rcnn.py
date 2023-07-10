@@ -6,8 +6,10 @@ import flaskr.utils as utils
 import os
 import subprocess
 
+from mmdet.apis import init_detector
+
 # 注册蓝图
-bp = Blueprint('mask_rcnn', __name__)
+bp = Blueprint('cascade_mask_rcnn', __name__)
 
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
@@ -15,19 +17,22 @@ processes = {}
 
 # 定义单个模型的路由
 class model:
-    home = 'mask_rcnn.home'
-    inference = 'mask_rcnn.inference'
-    training = 'mask_rcnn.training'
-    result = 'mask_rcnn.result'
-    pr_page = 'mask_rcnn.pr_page'
+    home = 'cascade_mask_rcnn.home'
+    inference = 'cascade_mask_rcnn.inference'
+    training = 'cascade_mask_rcnn.training'
+    result = 'cascade_mask_rcnn.result'
+    pr_page = 'cascade_mask_rcnn.pr_page'
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.pth'
+config_file: str = 'flaskr/static/model/cascade-mask-rcnn_x101-64x4d_fpn_1x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/epoch_12.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
+# pyecharts配置
+REMOTE_HOST = "https://pyecharts.github.io/assets/js"
+network_model = init_detector(config_file, checkpoint_file, device='cpu')
 """
 页面展示
 """
@@ -35,19 +40,24 @@ cache_path = 'flaskr/cache/'
 
 @bp.route('/')
 def home():
-    return render_template('mask_rcnn/mask_rcnn_base.html', model=model)
+    return render_template('cascade_mask_rcnn/cascade_mask_rcnn_base.html', model=model)
 
 
 @bp.route('/inference')
 def inference():
-    return render_template('mask_rcnn/inference.html', model=model)
+    return render_template('cascade_mask_rcnn/inference.html', model=model)
+
+
+@bp.route('/pr_page')
+def pr_page():
+    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
 
 
 @bp.route('/training', methods=['GET', 'POST'])
 def training():
     if request.method == 'GET':
         # 模型启动
-        return render_template('mask_rcnn/training.html', model=model)
+        return render_template('cascade_mask_rcnn/training.html', model=model)
     elif request.method == 'POST':
         key = utils.create_key()
         arguments = {}
@@ -122,19 +132,15 @@ def training():
         # res = stdout.decode('utf-8')
         # output, error = process.communicate()
         processes[key] = process
-        return render_template('mask_rcnn/training_processing.html', model=model, key=key)
+        return render_template('cascade_mask_rcnn/training_processing.html', model=model, key=key)
 
 
 @bp.route('/result')
 def result():
     # 加载配置
     if request.method == 'GET':
-        return render_template('mask_rcnn/result.html', model=model)
+        return render_template('cascade_mask_rcnn/result.html', model=model)
 
-
-@bp.route('/pr_page')
-def pr_page():
-    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
 
 """
 接口请求

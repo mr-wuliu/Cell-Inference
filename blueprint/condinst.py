@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 
 import mmcv
 import numpy as np
@@ -32,6 +31,7 @@ class model:
     inference = 'condinst.inference'
     training = 'condinst.training'
     result = 'condinst.result'
+    pr_page = 'mask_rcnn.pr_page'
 
 
 # 模型配置文件
@@ -320,6 +320,9 @@ def result():
     return render_template('condinst/result.html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, model=model)
 
+@bp.route('/pr_page')
+def pr_page():
+    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
 
 """
 接口请求
