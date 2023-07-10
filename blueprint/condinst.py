@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 
 import mmcv
 import numpy as np
@@ -7,6 +8,7 @@ import torch
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
+
 import pyecharts.options as opts
 from jinja2 import Markup
 from matplotlib import pyplot as plt
@@ -17,9 +19,12 @@ from mmengine.visualization import Visualizer
 from pyecharts.charts import Line
 from pyecharts.faker import Faker
 
+import flaskr.utils as utils
+
 # 注册蓝图
 bp = Blueprint('condinst', __name__)
-
+# 创建子进程列表，用于保存正在执行的子进程对象
+processes = {}
 
 # 定义单个模型的路由
 class model:
@@ -219,9 +224,87 @@ def inference():
     return render_template('condinst/inference.html', model=model)
 
 
-@bp.route('/training')
+@bp.route('/training', methods=['GET', 'POST'])
 def training():
-    return render_template('condinst/result.html', model=model)
+    if request.method == 'GET':
+        # 模型启动
+        return render_template('mask_rcnn/training.html', model=model)
+    elif request.method == 'POST':
+        key = utils.create_key()
+        arguments = {}
+        # for arg in request.form.to_dict():
+        # 获取上传参数
+        """
+        num_classes
+        lr
+        num_workers
+        batch_size
+        """
+        for i in request.form:
+            arg_key = i
+            arg_val = request.form[i]
+            if arg_key == 'num_classes':
+                if arg_val == None or arg_val == '':
+                    arg_val = 5
+            elif arg_key == 'lr':
+                if arg_val == None or arg_val == '':
+                    arg_val = 0.02
+            elif arg_key == 'num_workers':
+                if arg_val == None or arg_val == '':
+                    arg_val = 2
+            elif arg_key == 'batch_size':
+                if arg_val == None or arg_val == '':
+                    arg_val = 4
+            else:
+                continue
+            arguments[arg_key] = arg_val
+
+        # 读取 config.f 文件
+        with open('flaskr/static/model/base/condinst_r101_fpn_ms-poly-90k_coco_instance.f', 'r') as file:
+            lines = file.readlines()
+        file.close()
+
+        # 修改变量
+        for i in range(len(lines)):
+            if lines[i].startswith('set_num_classes='):
+                lines[i] = 'set_num_classes=' + str(arguments['num_classes']) + '\n'  # 将变量修改为新的值
+            if lines[i].startswith('set_lr='):
+                lines[i] = 'set_lr=' + str(arguments['lr']) + '\n'
+            if lines[i].startswith('set_num_workers='):
+                lines[i] = 'set_num_workers=' + str(arguments['num_workers']) + '\n'
+            if lines[i].startswith('set_batch_size='):
+                lines[i] = 'set_batch_size=' + str(arguments['batch_size']) + '\n'
+            if lines[i].startswith('# end var'):
+                lines[i] = ''
+                break
+        # 写入新的 Python 文件
+        config = 'flaskr/static/model/config/train_' + key + '.py'
+        output = os.path.join(cache_path, 'work_dir_' + key)
+
+        with open(config, 'w') as file:
+            file.writelines(lines)
+
+        # 执行脚本
+        script = 'mmdetection/tools/train.py'
+        args = [config,
+                '--work-dir', output]
+        # ' > ' + cache_path+key+'/log.txt']
+        # 创建文件夹
+
+        if not os.path.exists(output):
+            os.mkdir(output)
+
+        # 重定向输出
+        log = open(os.path.join(output, 'log.txt'), 'a')
+        log.write('begin to run.\n')
+        process = subprocess.Popen(['python', script] + args,
+                                   stdout=log,
+                                   stderr=log)
+        # stdout, stderr = process.communicate()
+        # res = stdout.decode('utf-8')
+        # output, error = process.communicate()
+        processes[key] = process
+        return render_template('mask_rcnn/training_processing.html', model=model, key=key)
 
 
 @bp.route('/result')
@@ -235,7 +318,7 @@ def result():
     bbox_map_plot = Markup(bbox_map.render_embed())
     seg_map = generate_seg_map_chart(json_list)
     seg_map_plot = Markup(seg_map.render_embed())
-    return render_template('condinst/ .html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
+    return render_template('condinst/result.html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, model=model)
 
 @bp.route('/pr_page')
@@ -245,7 +328,39 @@ def pr_page():
 """
 接口请求
 """
-# @bp.route('/lr')
-# def lr():
-#     chart = line.dump_options()
-#     return render_template('flaskr/templates/condinst/lr.html', chart_options=chart)
+@bp.route('/data_handle/res', methods=['GET', 'POST'])
+def img_inference_res():
+    if request.method == 'POST':
+        key = request.json['key']
+        print(key)
+        img_stream = utils.return_img_stream(
+            os.path.join(cache_path, 'inf_' + key + '.png'))
+
+        return img_stream
+    return 'error'
+
+
+@bp.route('/stop_train', methods=['GET', 'POST'])
+def stop_train():
+    if request.method == 'POST':
+        key = request.json['key']
+        process = processes[key]
+        process.terminate()
+        return {'apply': '训练终止!'}
+
+
+@bp.route('/log/<key>', methods=['GET', 'POST'])
+def get_log(key):
+    if request.method == 'GET':
+        import re
+        dir = os.path.join(cache_path, 'work_dir_' + key, 'log.txt')
+        with open(dir, 'r') as file:
+            log_lines = file.readlines()
+        log_content = ''
+        for line in log_lines:
+            line = line.strip()  # 去除行首尾的空白字符
+            line = f'<div>{line}</div>'  # 添加 <div> 标签
+            log_content += line
+        # log_content = re.sub(r'\n', '<br>', log_content)
+        file.close()
+        return log_content
