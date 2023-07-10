@@ -1,0 +1,108 @@
+{% extends 'common/base.html' %}
+
+{% block main %}
+
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">{{ loss_title }}</h3>
+            </div>
+            <div id="loss">
+                {{ losses|safe }}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div id="carouselExampleIndicators" class="carousel slide">
+                <div class="card-body">
+                <h5 class="card-title">特征叠加原图——特征图</h5>
+            </div>
+            <!-- 按钮索引定义 -->
+                <div class="carousel-indicators">
+                    {% for index, img in img_list %}
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to={{ index }}
+                            {% if loop.first %}class="active"{% endif %} aria-current="true"></button>
+                    {% endfor %}
+                </div>
+            <!-- 添加图片 -->
+                <div class="carousel-inner">
+                    {% for index, img in img_list %}
+                        <div class="carousel-item  {% if loop.first %}active{% endif %}">
+                            <img src="{{ url_for('static', filename=img) }}"
+                                class="d-block w-100" alt="Slide {{ index }}">
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">bbox mAP</h3>
+            </div>
+            <div id="bbox_mAP">
+                {{ bbox_map|safe }}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Learning Rate</h3>
+            </div>
+            <div id="lr">
+                {{ lr|safe }}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+        {% if t_sne is defined %}
+            <img src="{{ url_for('static', filename=t_sne.path) }}"
+                    class="card-img-top"
+                    alt="Waterfall"/>
+            <div class="card-body">
+                    <h5 class="card-title">{{ t_sne.title}}</h5>
+                    <p class="card-text">
+                        {{ t_sne.text }}
+                    </p>
+            </div>
+        {% else %}
+            <img src="{{ url_for('static', filename=t_sne.path) }}"
+                    class="card-img-top"
+                    alt="Waterfall"/>
+            <div class="card-body">
+                    <h5 class="card-title">CondInst T-SNE图</h5>
+                    <p class="card-text">
+                        数据集经过CondInst 模型推导, 获取其特征并使用T-SNE降维可视化.
+                    </p>
+            </div>
+        {% endif %}
+
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">segm mAP</h3>
+            </div>
+            <div id="map">
+                {{ seg_map|safe }}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

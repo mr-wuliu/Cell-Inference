@@ -1,26 +1,11 @@
 import json
 import os
 import subprocess
-
-import mmcv
-import numpy as np
-import torch
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 
-import pyecharts.options as opts
-from jinja2 import Markup
-from matplotlib import pyplot as plt
-from mmcv import Compose, ToTensor, Normalize
-from mmdet.apis import init_detector
-from mmdet.models import CondInst
-from mmengine.visualization import Visualizer
-from pyecharts.charts import Line
-from pyecharts.faker import Faker
-
 import flaskr.utils as utils
-
 # 注册蓝图
 bp = Blueprint('condinst', __name__)
 # 创建子进程列表，用于保存正在执行的子进程对象
@@ -35,180 +20,17 @@ class model:
     pr_page = 'mask_rcnn.pr_page'
 
 
+# Draw 继承
+class Draw(utils.Draw):
+    pass
+
+
 # 模型配置文件
-config_file: str = 'flaskr/static/model/cascade-mask-rcnn_x101-64x4d_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/epoch_12.pth'
+config_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.py'
+checkpoint_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
-# pyecharts配置
-REMOTE_HOST = "https://pyecharts.github.io/assets/js"
-network_model = init_detector(config_file, checkpoint_file, device='cpu')
-"""
-定义画图方法
-"""
-
-
-def get_data() -> list:
-    path = 'mmdetection/condinst_r101/20230703_104440/vis_data/scalar.json'
-    json_list = []
-    with open(path, 'r') as f:
-        for line in f:
-            try:
-                json_data = json.loads(line)
-                # 处理每个JSON对象
-                # 访问和操作json_data，表示当前行的JSON对象
-                json_list.append(json_data)
-            except json.decoder.JSONDecodeError:
-                # 解析失败，处理下一行
-                continue
-    return json_list
-
-
-def generate_lr_chart(json_list) -> Line:
-    y_data = []
-    x_data = []
-    for d in json_list:
-        if 'lr' in d:
-            y_data.append(d['lr'])
-            x_data.append(d['step'])
-    line = (
-        Line().add_xaxis(x_data)
-        .add_yaxis('Learning Rate', y_data)
-    )
-    # change size
-    line.width = '100%'
-    return line
-
-
-def generate_loss_chart(json_list) -> Line:
-    x_data = []
-    y_data = []
-    y_cls_data = []
-    y_bbox_data = []
-    y_mask_data = []
-    y_centerness_data = []
-    for d in json_list:
-        if 'loss' in d:
-            y_data.append(d['loss'])
-            y_cls_data.append(d['loss_cls'])
-            y_bbox_data.append(d['loss_bbox'])
-            y_mask_data.append(d['loss_mask'])
-            y_centerness_data.append(d['loss_centerness'])
-            x_data.append(d['step'])
-    line = (
-        Line().add_xaxis(x_data)
-        .add_yaxis('loss', y_data)
-        .add_yaxis('loss_cls', y_cls_data)
-        .add_yaxis('loss_bbox', y_bbox_data)
-        .add_yaxis('loss_mask', y_mask_data)
-        .add_yaxis('loss_centerness', y_centerness_data)
-    )
-    # change size
-    line.width = '100%'
-    return line
-
-
-def generate_bbox_map_chart(json_list) -> Line:
-    x_data = ['10000', '20000', '30000', '40000', '50000', '60000', '70000', '80000', '90000']
-    y_bbox_map_data = []
-    y_bbox_map50_data = []
-    y_bbox_map75_data = []
-    y_bbox_map_small_data = []
-    y_bbox_map_medium_data = []
-    y_bbox_map_large_data = []
-    for d in json_list:
-        if 'coco/bbox_mAP' in d:
-            y_bbox_map_data.append(d['coco/bbox_mAP'])
-            y_bbox_map50_data.append(d['coco/bbox_mAP_50'])
-            y_bbox_map75_data.append(d['coco/bbox_mAP_75'])
-            y_bbox_map_small_data.append(d['coco/bbox_mAP_s'])
-            y_bbox_map_medium_data.append(d['coco/bbox_mAP_m'])
-            y_bbox_map_large_data.append(d['coco/bbox_mAP_l'])
-    line = (
-        Line().add_xaxis(x_data)
-        .add_yaxis('mAP', y_bbox_map_data)
-        .add_yaxis('mAP_50', y_bbox_map50_data)
-        .add_yaxis('mAP_75', y_bbox_map75_data)
-        .add_yaxis('mAP_s', y_bbox_map_small_data)
-        .add_yaxis('mAP_m', y_bbox_map_medium_data)
-        .add_yaxis('mAP_l', y_bbox_map_large_data)
-    )
-    # change size
-    line.width = '100%'
-    return line
-
-
-def generate_seg_map_chart(json_list) -> Line:
-    x_data = ['10000', '20000', '30000', '40000', '50000', '60000', '70000', '80000', '90000']
-    y_seg_map_data = []
-    y_seg_map50_data = []
-    y_seg_map75_data = []
-    y_seg_map_small_data = []
-    y_seg_map_medium_data = []
-    y_seg_map_large_data = []
-    for d in json_list:
-        if 'coco/segm_mAP' in d:
-            y_seg_map_data.append(d['coco/segm_mAP'])
-            y_seg_map50_data.append(d['coco/segm_mAP_50'])
-            y_seg_map75_data.append(d['coco/segm_mAP_75'])
-            y_seg_map_small_data.append(d['coco/segm_mAP_s'])
-            y_seg_map_medium_data.append(d['coco/segm_mAP_m'])
-            y_seg_map_large_data.append(d['coco/segm_mAP_l'])
-    line = (
-        Line().add_xaxis(x_data)
-        .add_yaxis('mAP', y_seg_map_data)
-        .add_yaxis('mAP_50', y_seg_map50_data)
-        .add_yaxis('mAP_75', y_seg_map75_data)
-        .add_yaxis('mAP_s', y_seg_map_small_data)
-        .add_yaxis('mAP_m', y_seg_map_medium_data)
-        .add_yaxis('mAP_l', y_seg_map_large_data)
-    )
-    # change size
-    line.width = '100%'
-    return line
-
-
-def _forward(x):
-    conv1 = network_model.backbone.conv1(x)
-    bn1 = network_model.backbone.bn1(conv1)
-
-    layer1 = network_model.backbone.layer1(bn1)
-    layer2 = network_model.backbone.layer2(layer1)
-    layer3 = network_model.backbone.layer3(layer2)
-    layer4 = network_model.backbone.layer4(layer3)
-
-    return conv1, bn1, layer1, layer2, layer3, layer4
-
-
-def preprocess_img(img,
-                   mean=[0.485, 0.456, 0.406],
-                   std=[0.229, 0.224, 0.225]):
-    image_norm = np.float32(img) / 255
-    preprocessing = Compose([
-        ToTensor(),
-        Normalize(mean=mean, std=std)
-    ])
-    tensor = preprocessing(image_norm.copy()).unsqueeze(0)
-    return tensor
-
-
-def draw_feature():
-    md = network_model
-    md.forward = _forward
-    visualizer = Visualizer()
-    img = "cache/urlmCKGR9WyV.png"
-    img = mmcv.imread(os.path.join(img),
-                      channel_order='rgb')
-    input_tensor = preprocess_img(img)
-    features = md(img)
-    feat = md(input_tensor)[0]
-    input_data = visualizer.draw_featmap(feat, channel_reduction='select_max')
-    feature_map = features.squeeze().detach().numpy()  # 转换特征图为可处理的数组
-    plt.imshow(feature_map, cmap='hot')
-    plt.colorbar()
-    plt.title('Feature Map')
-    plt.show()
 """
 页面展示
 """
@@ -309,17 +131,55 @@ def training():
 
 @bp.route('/result')
 def result():
-    json_list = get_data()
-    loss = generate_loss_chart(json_list)
-    loss_plot = Markup(loss.render_embed())
-    lr = generate_lr_chart(json_list)
-    lr_plot = Markup(lr.render_embed())
-    bbox_map = generate_bbox_map_chart(json_list)
-    bbox_map_plot = Markup(bbox_map.render_embed())
-    seg_map = generate_seg_map_chart(json_list)
-    seg_map_plot = Markup(seg_map.render_embed())
-    return render_template('condinst/result.html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
-                           seg_map=seg_map_plot, model=model)
+
+    model_name = 'condinst'
+    # 绘制各式图表
+
+    # 遍历文件夹, 搜索日期最新的文件
+    path = 'flaskr/static/model/sample/'+model_name
+
+    # 遍历文件夹, 搜索日期最新的文件
+    folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
+    latest_file = max(folders) if folders else ''
+    if not latest_file:
+        return
+    for folder in os.listdir(path):
+        if folder.startswith(tuple(str(i) for i in range(10))):
+            if latest_file < folder:
+                latest_file = folder
+    path = os.path.join(path,latest_file,'vis_data/scalars.json' )
+
+    json_list = Draw.get_data(path)
+    loss = Draw.generate_loss_chart(json_list)
+    loss_plot = Draw.Markup(loss.render_embed())
+    lr = Draw.generate_lr_chart(json_list)
+    lr_plot = Draw.Markup(lr.render_embed())
+    bbox_map = Draw.generate_bbox_map_chart(json_list)
+    bbox_map_plot = Draw.Markup(bbox_map.render_embed())
+    seg_map = Draw.generate_seg_map_chart(json_list)
+    seg_map_plot = Draw.Markup(seg_map.render_embed())
+
+    # 特征图展示
+    img_list = []
+    img_path = 'img/features/'+model_name
+    num_img = 0
+    for img_f in os.listdir('flaskr/static/' + img_path):
+        if img_f.startswith('combine'):
+            elm = (str(num_img), img_path + '/' + img_f)
+            num_img += 1
+            img_list.append(elm)
+    # t_sne 展示
+    class t_sne:
+        path = 'img/t_sne/'+model_name + '.png'
+        text = '数据集经过Condinst 模型推导, 获取其特征并使用T-SNE降维可视化.'
+        title = 'Condinst T-SNE图'
+
+    return render_template('condinst/result.html',
+                           losses=loss_plot,
+                           lr=lr_plot, bbox_map=bbox_map_plot,
+                           seg_map=seg_map_plot, img_list=img_list,
+                           t_sne=t_sne, loss_title='Condinst Loss',
+                           model=model)
 
 @bp.route('/pr_page')
 def pr_page():
@@ -328,16 +188,46 @@ def pr_page():
 """
 接口请求
 """
+
+@bp.route('/data_handle', methods=['GET', 'POST'])
+def img_inference():
+    # post 上传图片, get下载图片
+    res = {'apply': '', 'key': ''}
+    if request.method == 'POST':
+        import base64
+        if request.form.get('image').endswith('.png'):
+            return {'apply': '请选择图片'}
+
+        img_stream: str = request.form.get('image').split(',')[1]
+        img = base64.b64decode(img_stream)
+        # 图片唯一标识
+        key = utils.create_key()
+        with open(os.path.join(cache_path, key + '.png'), 'wb') as img_decode:
+            img_decode.write(img)
+        img_decode.close()
+
+        # 对图片进行推理
+        utils.inference(config_file, checkpoint_file, key)
+        res['apply'] = 'pass'
+        res['key'] = key
+
+        return {'apply': 'pass', 'key': key}
+    elif request.method == 'GET':
+        res['apply'] = 'ERROR'
+        res['key'] = ''
+        return {'apply': 'ERROR', 'key': ''}
+    else:
+        return {'apply': 'error', 'key': ''}
 @bp.route('/data_handle/res', methods=['GET', 'POST'])
 def img_inference_res():
     if request.method == 'POST':
         key = request.json['key']
-        print(key)
         img_stream = utils.return_img_stream(
             os.path.join(cache_path, 'inf_' + key + '.png'))
 
         return img_stream
     return 'error'
+
 
 
 @bp.route('/stop_train', methods=['GET', 'POST'])

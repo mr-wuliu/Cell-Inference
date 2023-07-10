@@ -22,7 +22,7 @@
 {% block nav %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Histopathology</a>
+            <a class="navbar-brand" href="{{ url_for('home.home') }}">Histopathology</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -128,11 +128,15 @@
                     <div class="container-fluid">
                         <div class="row">
                             {% block main %}
-                                <div class="col-md-4">first column</div>
-                                <div class="col-md-7">
-                                    <!-- 主页 -->
-                                    Content
+                                <div class="col">
+                                <div class="col-md-4">
+                                    <h1>组织细胞分割小组展示</h1>
+
+                                    <h2>组员: </h2>
+                                    <h4>吴翰琦</h4>
                                 </div>
+                                </div>
+
                             {% endblock %}
                         </div>
                     </div>
