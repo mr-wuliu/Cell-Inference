@@ -10,6 +10,7 @@ class model:
     inference = 'mask_rcnn.inference'
     training = 'mask_rcnn.training'
     result = 'mask_rcnn.result'
+    pr_page = 'mask_rcnn.pr_page'
 
 @bp.route('/')
 def home():

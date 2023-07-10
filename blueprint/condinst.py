@@ -32,11 +32,12 @@ class model:
     inference = 'condinst.inference'
     training = 'condinst.training'
     result = 'condinst.result'
+    pr_page = 'mask_rcnn.pr_page'
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.py'
-checkpoint_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.90000.pth'
+config_file: str = 'flaskr/static/model/cascade-mask-rcnn_x101-64x4d_fpn_1x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/epoch_12.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -49,7 +50,7 @@ network_model = init_detector(config_file, checkpoint_file, device='cpu')
 
 
 def get_data() -> list:
-    path = 'mmdetection/condinst_r101/20230703_104440/vis_data/scalars.json'
+    path = 'mmdetection/condinst_r101/20230703_104440/vis_data/scalar.json'
     json_list = []
     with open(path, 'r') as f:
         for line in f:
@@ -320,6 +321,9 @@ def result():
     return render_template('condinst/result.html', losses=loss_plot, lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, model=model)
 
+@bp.route('/pr_page')
+def pr_page():
+    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
 
 """
 接口请求
