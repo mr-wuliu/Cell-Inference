@@ -8,8 +8,10 @@ from mmdet.apis import init_detector, inference_detector
 from pyecharts.charts import Line
 from jinja2 import Markup as Mk
 
+
 def create_key():
     return ''.join(random.sample(string.ascii_letters + string.digits, 12))
+
 
 def return_img_stream(img_local_path):
     """
@@ -25,10 +27,11 @@ def return_img_stream(img_local_path):
         img_stream = base64.b64encode(img_stream).decode()
     return img_stream
 
-def inference(config_file:str, checkpoint_file:str,
-              img_key:str) -> None:
+
+def inference(config_file: str, checkpoint_file: str,
+              img_key: str) -> None:
     cache_path = 'flaskr/cache'
-    img_path = os.path.join(cache_path,img_key+'.png')
+    img_path = os.path.join(cache_path, img_key + '.png')
     img = mmcv.imread(img_path)
     register_all_modules()
     model = init_detector(config_file, checkpoint_file, device='cuda:0')
@@ -36,7 +39,7 @@ def inference(config_file:str, checkpoint_file:str,
     visualizer = VISUALIZERS.build(model.cfg.visualizer)
     visualizer.dataset_meta = model.dataset_meta
 
-    result = inference_detector(model,img)
+    result = inference_detector(model, img)
     visualizer.add_datasample(
         'result',
         img,
@@ -47,18 +50,21 @@ def inference(config_file:str, checkpoint_file:str,
     img_npy = visualizer.get_image()[..., ::-1]
     from PIL import Image
     img_stream = Image.fromarray(img_npy.astype('uint8')).convert('RGB')
-    img_stream.save(os.path.join(cache_path,'inf_'+img_key+'.png'))
+    img_stream.save(os.path.join(cache_path, 'inf_' + img_key + '.png'))
+
 
 """
 定义画图方法
 """
+
+
 class Draw:
     @classmethod
-    def Markup(self,data):
+    def Markup(self, data):
         return Mk(data)
 
     @classmethod
-    def get_data(self,path:str ) -> list:
+    def get_data(self, path: str) -> list:
         json_list = []
         with open(path, 'r') as f:
             for line in f:
@@ -73,7 +79,7 @@ class Draw:
         return json_list
 
     @classmethod
-    def generate_lr_chart(self,json_list) -> Line:
+    def generate_lr_chart(self, json_list) -> Line:
         y_data = []
         x_data = []
         for d in json_list:
@@ -89,7 +95,7 @@ class Draw:
         return line
 
     @classmethod
-    def generate_loss_chart(self,json_list) -> Line:
+    def generate_loss_chart(self, json_list) -> Line:
         x_data = []
         y_data = []
         y_cls_data = []
@@ -120,7 +126,7 @@ class Draw:
         return line
 
     @classmethod
-    def generate_bbox_map_chart(self,json_list) -> Line:
+    def generate_bbox_map_chart(self, json_list) -> Line:
         x_data = ['10000', '20000', '30000', '40000', '50000', '60000', '70000', '80000', '90000']
         y_bbox_map_data = []
         y_bbox_map50_data = []
@@ -150,7 +156,7 @@ class Draw:
         return line
 
     @classmethod
-    def generate_seg_map_chart(self,json_list) -> Line:
+    def generate_seg_map_chart(self, json_list) -> Line:
         x_data = ['10000', '20000', '30000', '40000', '50000', '60000', '70000', '80000', '90000']
         y_seg_map_data = []
         y_seg_map50_data = []
@@ -178,5 +184,39 @@ class Draw:
         # change size
         line.width = '100%'
         return line
+
+# """
+# 读取文件路径
+# """
+#
+# class ReadFilePath:
+#     # 遍历某个目录下的文件树
+#     @classmethod
+#     def traverse_directory(self, directory):
+#         for root, dirs, files in os.walk(directory):
+#             for file in files:
+#                 file_path = os.path.join(root, file)
+#                 # 在这里处理文件路径file_path
+#                 return file_path
+#
+#
+#     # 读取特定路径下的文件夹或文件
+#     @classmethod
+#     def read_path(self, path):
+#         if os.path.isdir(path):
+#             # 处理文件夹路径
+#             self.traverse_directory(path)
+#         elif os.path.isfile(path):
+#             # 处理文件路径
+#             # 在这里读取文件内容
+#             with open(path, 'r') as file:
+#                 content = file.read()
+#                 # 在这里处理文件内容content
+#                 return content
+#
+#         else:
+#             print("指定路径不存在或不是有效的文件或文件夹路径。")
+
+
 if __name__ == '__main__':
     pass
