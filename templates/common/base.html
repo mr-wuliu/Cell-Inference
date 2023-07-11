@@ -85,10 +85,10 @@
                             <li><a class="dropdown-item" href="#">混淆矩阵</a></li>
                             <li><a class="dropdown-item" href="{{ url_for(model.pr_page) }}">PR_Curve</a></li>
                             <li><a class="dropdown-item" href="#">更多...</a></li>
-{#                            <li>#}
-{#                                <hr class="dropdown-divider">#}
-{#                            </li>#}
-{#                            <li><a class="dropdown-item" href="#">Sign out</a></li>#}
+                            {#                            <li>#}
+                            {#                                <hr class="dropdown-divider">#}
+                            {#                            </li>#}
+                            {#                            <li><a class="dropdown-item" href="#">Sign out</a></li>#}
                         </ul>
                     </li>
 
@@ -117,30 +117,30 @@
         </div>
     </div>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col min-vh-99 py-3">
-                <button class="btn float-end" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" role="button">
-                    <i class="bi bi-arrow-right-square-fill fs-3" data-bs-toggle="offcanvas"
-                       data-bs-target="#offcanvas"></i>
-                </button>
-                <!-- 修改此处可以顶格显示 -->
-                <div class="container">
-                    <div class="container-fluid">
-                        <div class="row">
-                            {% block main %}
-                                <div class="col">
+    <div class="row">
+        <div class="col min-vh-99 py-3">
+            <button class="btn float-end" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" role="button">
+                <i class="bi bi-arrow-right-square-fill fs-3" data-bs-toggle="offcanvas"
+                   data-bs-target="#offcanvas"></i>
+            </button>
+            <!-- 修改此处可以顶格显示 -->
+{#            <div class="container">#}
+                <div class="container-fluid">
+                    <div class="row">
+                        {% block main %}
+                            <div class="col">
                                 <div class="col-md-4">
                                     <h1>组织细胞分割小组展示</h1>
 
                                     <h2>组员: </h2>
                                     <h4>吴翰琦</h4>
                                 </div>
-                                </div>
+                            </div>
 
-                            {% endblock %}
-                        </div>
+                        {% endblock %}
                     </div>
                 </div>
+                {#                </div>#}
             </div>
         </div>
     </div>
