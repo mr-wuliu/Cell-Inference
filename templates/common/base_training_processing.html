@@ -1,0 +1,118 @@
+{% extends 'common/base.html' %}
+
+{% block main %}
+    <!-- 训练key以及日志 -->
+    <h4>the model is training.</h4>
+    <div class="container">
+        <div class="row">
+            <div class="input-group col-md-6 mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">key: </span>
+
+                </div>
+                <input id="model_key" type="text" class="form-control" placeholder="{{ key }}" aria-label="Username"
+                       aria-describedby="basic-addon1">
+                <button id="btn_stop" type="button" class="btn btn-primary col-lg-2 col-md-2">终止训练</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="log_box" data-bs-spy="scroll" data-bs-offset="0" class="border border-primary"
+         style="position: relative;height: 450px;overflow: auto;" tabindex="0">
+    </div>
+    <!-- 图片展示 -->
+    <div class="carousel-inner py-4">
+        <!-- Single item -->
+        <div class="carousel-item active">
+            <div class="container">
+                <div class="row">
+                    {% block show_pic %}
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename='img/t_sne/mask_rcnn_t_sne.png') }}"
+                                    class="card-img-top"
+                                    alt="Waterfall"/>
+                            <div class="card-body">
+                                <h5 class="card-title">模板图片</h5>
+                                <p class="card-text">
+                                    相似的图片展示可以基于此修改
+                                </p>
+                                <a href="#!" class="btn btn-primary">按钮</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+        <!-- Inner -->
+    </div>
+
+{% endblock %}
+
+
+{% block slef_js %}
+
+    <script type="text/javascript" charset="UTF-8">
+        // 获取图片的唯一编码
+        let model_key = '{{ key }}';
+        let upload_key;
+        let stop = false;
+        // 点击显示图片并预览
+        $(document).ready(function () {
+            $('#btn_stop').click(function () {
+                // 获取key
+                var get_key = document.getElementById("model_key").value;
+                if (document.getElementById("model_key").value === '') {
+                    upload_key = model_key;
+                } else {
+                    upload_key = get_key;
+                }
+                var currentURL = window.location.href;
+                var pathParts = currentURL.split('/');
+                var model_path = pathParts[3];
+
+                // 发起AJAX请求
+                var input = {
+                    'key': upload_key,
+                }
+                $.ajax({
+                    url: '/' + model_path + '/stop_train', // Flask的/upload接口的URL
+                    type: 'POST',
+                    data: JSON.stringify(input),
+                    processData: false,
+                    contentType: 'application/json',
+                    {#contentType: false,#}
+                    success: function (response) {
+                        // 上传成功后的操作
+                        alert(response['apply']);
+                        stop = true;
+                    }
+                });
+
+            });
+            // 轮询请求log
+            setInterval(function () {
+
+                var currentURL = window.location.href;
+                var pathParts = currentURL.split('/');
+                var model_path = pathParts[3];
+                if (!stop) {
+                    $.ajax({
+                        url: '/' + model_path + '/log/' + model_key, // 后端数据接口的 URL
+                        success: function (data) {
+                            // 更新前端页面的数据
+                            $('#log_box').html(data);
+                            var div = document.getElementById('log_box');
+                            div.scrollTop = div.scrollHeight;
+                        }
+                    });
+                }
+            }, 500); // 间隔时间为 0.5 秒
+
+        });
+
+    </script>
+{% endblock %}

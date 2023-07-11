@@ -1,16 +1,18 @@
-import mmcv
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 import flaskr.utils as utils
+# from flaskr.utils import Draw
 import os
 import subprocess
+from pyecharts.charts import Line
 
 # 注册蓝图
 bp = Blueprint('mask_rcnn', __name__)
 
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
+current_key = ''
 
 
 # 定义单个模型的路由
@@ -19,7 +21,36 @@ class model:
     inference = 'mask_rcnn.inference'
     training = 'mask_rcnn.training'
     result = 'mask_rcnn.result'
+    pr_page = 'mask_rcnn.pr_page'
 
+class Draw(utils.Draw):
+    @classmethod
+    def generate_loss_chart(self, json_list) -> Line:
+        x_data = []
+        y_data = []
+        y_cls_data = []
+        y_bbox_data = []
+        y_mask_data = []
+        y_centerness_data = []
+        for d in json_list:
+            if 'loss' in d:
+                y_data.append(d['loss'])
+                y_cls_data.append(d['loss_cls'])
+                y_bbox_data.append(d['loss_bbox'])
+                y_mask_data.append(d['loss_mask'])
+                y_centerness_data.append(d['acc'])
+                x_data.append(d['step'])
+        line = (
+            Line().add_xaxis(x_data)
+            .add_yaxis('loss', y_data)
+            .add_yaxis('loss_cls', y_cls_data)
+            .add_yaxis('loss_bbox', y_bbox_data)
+            .add_yaxis('loss_mask', y_mask_data)
+            .add_yaxis('acc', y_centerness_data)
+        )
+        # change size
+        line.width = '100%'
+        return line
 
 # 模型配置文件
 config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
@@ -94,6 +125,7 @@ def training():
                 lines[i] = 'set_batch_size=' + str(arguments['batch_size']) + '\n'
             if lines[i].startswith('# end var'):
                 lines[i] = ''
+                break
         # 写入新的 Python 文件
         config = 'flaskr/static/model/config/train_' + key + '.py'
         output = os.path.join(cache_path, 'work_dir_' + key)
@@ -117,18 +149,63 @@ def training():
         process = subprocess.Popen(['python', script] + args,
                                    stdout=log,
                                    stderr=log)
-        # stdout, stderr = process.communicate()
-        # res = stdout.decode('utf-8')
-        # output, error = process.communicate()
         processes[key] = process
         return render_template('mask_rcnn/training_processing.html', model=model, key=key)
 
 
-@bp.route('/result')
+@bp.route('/result', methods=['GET', 'POST'])
 def result():
-    # 加载配置
-    if request.method == 'GET':
-        return render_template('mask_rcnn/result.html', model=model)
+    # 绘制各式图
+    path = 'flaskr/static/model/sample/mask_rcnn_3x'
+    # 遍历文件夹, 搜索日期最新的文件
+    folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
+    latest_file = max(folders) if folders else ''
+    if not latest_file:
+        return
+    for folder in os.listdir(path):
+        if folder.startswith(tuple(str(i) for i in range(10))):
+            if latest_file < folder:
+                latest_file = folder
+    path = os.path.join(path, latest_file, 'vis_data/scalars.json')
+
+    # 其他图表
+    json_list = Draw.get_data(path)
+    loss = Draw.generate_loss_chart(json_list)
+    loss_plot = Draw.Markup(loss.render_embed())
+    lr = Draw.generate_lr_chart(json_list)
+    lr_plot = Draw.Markup(lr.render_embed())
+    bbox_map = Draw.generate_bbox_map_chart(json_list)
+    bbox_map_plot = Draw.Markup(bbox_map.render_embed())
+    seg_map = Draw.generate_seg_map_chart(json_list)
+    seg_map_plot = Draw.Markup(seg_map.render_embed())
+
+    # 特征图展示
+    img_list = []
+    img_path = 'img/features/mask_rcnn'
+    num_img = 0
+    for img_f in os.listdir('flaskr/static/' + img_path):
+        if img_f.startswith('combine'):
+            elm = (str(num_img), img_path + '/' + img_f)
+            num_img += 1
+            img_list.append(elm)
+
+    # t_sne 展示
+    class t_sne:
+        path = 'img/t_sne/Mask R-CNN 3x t-sne.png'
+        text = '数据集经过Mask R-CNN 模型推导, 获取其特征并使用T-SNE降维可视化.'
+        title = 'Mask R-CNN 1x T-SNE图'
+
+    return render_template('mask_rcnn/result.html',
+                           losses=loss_plot,
+                           lr=lr_plot, bbox_map=bbox_map_plot,
+                           seg_map=seg_map_plot, img_list=img_list,
+                           t_sne=t_sne, loss_title='Mask R-CNN Loss',
+                           model=model)
+
+
+@bp.route('/pr_page')
+def pr_page():
+    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
 
 
 """
@@ -149,7 +226,7 @@ def img_inference():
         img = base64.b64decode(img_stream)
         # 图片唯一标识
         key = utils.create_key()
-        with open(cache_path + key + '.png', 'wb') as img_decode:
+        with open(os.path.join(cache_path, key + '.png'), 'wb') as img_decode:
             img_decode.write(img)
         img_decode.close()
 
@@ -163,7 +240,6 @@ def img_inference():
         res['apply'] = 'ERROR'
         res['key'] = ''
         return {'apply': 'ERROR', 'key': ''}
-        # img = utils.return_img_stream(os.path.join(cache_path,'res_'+key))
     else:
         return {'apply': 'error', 'key': ''}
 
@@ -172,7 +248,6 @@ def img_inference():
 def img_inference_res():
     if request.method == 'POST':
         key = request.json['key']
-        print(key)
         img_stream = utils.return_img_stream(
             os.path.join(cache_path, 'inf_' + key + '.png'))
 
