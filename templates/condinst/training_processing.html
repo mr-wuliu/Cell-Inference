@@ -1,14 +1,17 @@
 {% extends 'common/base_training_processing.html' %}
 
 {% block show_pic %}
-    <div class="col-lg-12">
+    <div class="col-lg-6">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">模板图片</h5>
-                <p class="card-text">
-                    相似的图片展示可以基于此修改
-                </p>
-                <div id="loss_chart"></div>
+                <div id="lr"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <div id="losses"></div>
             </div>
         </div>
     </div>
@@ -55,7 +58,6 @@
             });
             // 轮询请求log
             setInterval(function () {
-                {#var chart = echarts.init(document.getElementById('loss_chart'));#}
                 var currentURL = window.location.href;
                 var pathParts = currentURL.split('/');
                 var model_path = pathParts[3];
@@ -73,8 +75,8 @@
                         {#type: "GET",#}
                         url: '/' + model_path + '/metrics/' + model_key,
                         success: function (result) {
-                            $('#loss_chart').html(result);
-                            {#chart.setOption(result)#}
+                            $('#losses').html(result.loss_plot);
+                            $('#lr').html(result.lr_plot);
                         },
                         error: function () {
                         },
@@ -82,7 +84,7 @@
                         }
                     });
                 }
-            }, 3000); // 间隔时间为 0.5 秒
+            }, 15000); // 间隔时间为 20 秒
 
         });
 
