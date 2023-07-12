@@ -272,9 +272,7 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/' + model_name + '.png'
-        text = '数据集经过 Cascade Mask R-CNN模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Cascade Mask R-CNN T-SNE图'
+        path = 'img/t_sne/Cascade Mask R-CNN t-sne.png'
 
     return render_template('cascade_mask_rcnn/result.html',
                            losses=loss_plot,

@@ -1,35 +1,62 @@
-import json
+from flask import (
+    Blueprint, flash, g, render_template, request, session, url_for, jsonify
+)
+from pyecharts.options.global_options import AriaOpts
+import flaskr.utils as utils
 import os
 import subprocess
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
-)
-
-import flaskr.utils as utils
+from pyecharts.charts import Line
 
 # 注册蓝图
-bp = Blueprint('condinst', __name__)
+bp = Blueprint('solo', __name__)
+
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
+current_key = ''
 
 
 # 定义单个模型的路由
 class model:
-    home = 'condinst.home'
-    inference = 'condinst.inference'
-    training = 'condinst.training'
-    result = 'condinst.result'
-    pr_page = 'condinst.pr_page'
+    home = 'solo.home'
+    inference = 'solo.inference'
+    training = 'solo.training'
+    result = 'solo.result'
+    pr_page = 'solo.pr_page'
 
 
-# Draw 继承
 class Draw(utils.Draw):
-    pass
+    @classmethod
+    def generate_loss_chart(self, json_list) -> Line:
+        x_data = []
+        y_data = []
+        y_cls_data = []
+        y_bbox_data = []
+        y_mask_data = []
+        y_centerness_data = []
+        for d in json_list:
+            if 'loss' in d:
+                y_data.append(d['loss'])
+                y_cls_data.append(d['loss_cls'])
+                y_bbox_data.append(d['loss_bbox'])
+                y_mask_data.append(d['loss_mask'])
+                y_centerness_data.append(d['acc'])
+                x_data.append(d['step'])
+        line = (
+            Line().add_xaxis(x_data)
+            .add_yaxis('loss', y_data)
+            .add_yaxis('loss_cls', y_cls_data)
+            .add_yaxis('loss_bbox', y_bbox_data)
+            .add_yaxis('loss_mask', y_mask_data)
+            .add_yaxis('acc', y_centerness_data)
+        )
+        # change size
+        line.width = '100%'
+        return line
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.py'
-checkpoint_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.pth'
+config_file: str = 'flaskr/static/model/solo_r50_fpn_1x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/epoch_12.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -40,19 +67,19 @@ cache_path = 'flaskr/cache/'
 
 @bp.route('/')
 def home():
-    return render_template('condinst/condinst_base.html', model=model)
+    return render_template('solo/mask_rcnn_base.html', model=model)
 
 
 @bp.route('/inference')
 def inference():
-    return render_template('condinst/inference.html', model=model)
+    return render_template('solo/inference.html', model=model)
 
 
 @bp.route('/training', methods=['GET', 'POST'])
 def training():
     if request.method == 'GET':
         # 模型启动
-        return render_template('mask_rcnn/training.html', model=model)
+        return render_template('solo/training.html', model=model)
     elif request.method == 'POST':
         key = utils.create_key()
         arguments = {}
@@ -84,7 +111,7 @@ def training():
             arguments[arg_key] = arg_val
 
         # 读取 config.f 文件
-        with open('flaskr/static/model/base/condinst_r101_fpn_ms-poly-90k_coco_instance.f', 'r') as file:
+        with open('flaskr/static/model/base/mask-rcnn_r101_fpn_ms-poly-3x_coco.f', 'r') as file:
             lines = file.readlines()
         file.close()
 
@@ -124,21 +151,14 @@ def training():
         process = subprocess.Popen(['python', script] + args,
                                    stdout=log,
                                    stderr=log)
-        # stdout, stderr = process.communicate()
-        # res = stdout.decode('utf-8')
-        # output, error = process.communicate()
         processes[key] = process
-        return render_template('mask_rcnn/training_processing.html', model=model, key=key)
+        return render_template('solo/training_processing.html', model=model, key=key)
 
 
-@bp.route('/result')
+@bp.route('/result', methods=['GET', 'POST'])
 def result():
-    model_name = 'condinst'
-    # 绘制各式图表
-
-    # 遍历文件夹, 搜索日期最新的文件
-    path = 'flaskr/static/model/sample/' + model_name
-
+    # 绘制各式图
+    path = 'flaskr/static/model/sample/solo'
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
     latest_file = max(folders) if folders else ''
@@ -150,6 +170,7 @@ def result():
                 latest_file = folder
     path = os.path.join(path, latest_file, 'vis_data/scalars.json')
 
+    # 其他图表
     json_list = Draw.get_data(path)
     loss = Draw.generate_loss_chart(json_list)
     loss_plot = Draw.Markup(loss.render_embed())
@@ -162,7 +183,7 @@ def result():
 
     # 特征图展示
     img_list = []
-    img_path = 'img/features/' + model_name
+    img_path = 'img/features/solo'
     num_img = 0
     for img_f in os.listdir('flaskr/static/' + img_path):
         if img_f.startswith('combine'):
@@ -172,13 +193,13 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/CondInst R101 t-sne.png'
+        path = 'img/t_sne/Solo t-sne.png'
 
-    return render_template('condinst/result.html',
+    return render_template('mask_rcnn/result.html',
                            losses=loss_plot,
                            lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, img_list=img_list,
-                           t_sne=t_sne, loss_title='Condinst Loss',
+                           t_sne=t_sne, loss_title='Solo Loss',
                            model=model)
 
 
@@ -341,6 +362,7 @@ def get_log(key):
         # log_content = re.sub(r'\n', '<br>', log_content)
         file.close()
         return log_content
+
 @bp.route('/metrics/<key>', methods=['GET', 'POST'])
 def get_metrics(key):
     if request.method == 'GET':
@@ -360,7 +382,8 @@ def get_metrics(key):
         json_list = Draw.get_data(path)
         loss = Draw.generate_loss_chart(json_list)
         loss_plot = Draw.Markup(loss.render_embed())
-        lr = Draw.generate_lr_chart(json_list)
-        lr_plot = Draw.Markup(lr.render_embed())
-        # return loss_plot
+
         return loss_plot
+
+        # return loss.dump_options_with_quotes()
+

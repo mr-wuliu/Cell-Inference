@@ -194,8 +194,6 @@ def result():
     # t_sne 展示
     class t_sne:
         path = 'img/t_sne/Mask R-CNN 3x t-sne.png'
-        text = '数据集经过Mask R-CNN 模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Mask R-CNN 1x T-SNE图'
 
     return render_template('mask_rcnn/result.html',
                            losses=loss_plot,
