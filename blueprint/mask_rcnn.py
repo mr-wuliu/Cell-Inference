@@ -23,6 +23,7 @@ class model:
     result = 'mask_rcnn.result'
     pr_page = 'mask_rcnn.pr_page'
 
+
 class Draw(utils.Draw):
     @classmethod
     def generate_loss_chart(self, json_list) -> Line:
@@ -51,6 +52,7 @@ class Draw(utils.Draw):
         # change size
         line.width = '100%'
         return line
+
 
 # 模型配置文件
 config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
@@ -204,13 +206,96 @@ def result():
 
 
 @bp.route('/pr_page')
-def pr_page():
-    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
+def pr_page(page=1):
+    page = 1
+    page = str(page)
+    img_path: str = "img/pr_perclass"
+    bbox_img_list = []
+    segm_img_list = []
+    # 获取当前脚本的文件名
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+    img_path = img_path + '/' + model_name
+    print(img_path)
+    bbox_img_num = 0
+    segm_img_num = 0
+    dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
+    img_path += '/coco_error_analysis'
+    for path in os.listdir(dir_path):
+        # print(path)
+        if path == 'bbox':
+            for bbox_img in os.listdir(dir_path + '/' + path):
+                cat = bbox_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    bbox_img_num += 1
+                    bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
+                    print(bbox_img_dir)
+                    bbox_img_list.append(bbox_img_dir)
+        elif path == 'segm':
+            for segm_img in os.listdir(dir_path + '/' + path):
+                cat = segm_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    segm_img_num += 1
+                    segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
+                    print(segm_img_dir)
+                    segm_img_list.append(segm_img_dir)
+
+    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+    img_id_list = {"img_segm": "img_segm", "img_bbox": "img_bbox"}
+
+    return render_template(model_name + '/pr_page.html',
+                           img_id_list=img_id_list,
+                           img_list=img_list,
+                           model=model)
 
 
 """
 接口请求
 """
+
+
+@bp.route('/pr_page_update', methods=['GET', 'POST'])
+def pr_page_update():
+    page = request.args.get('page')
+    page = str(page)
+    img_path: str = "img/pr_perclass"
+    bbox_img_list = []
+    segm_img_list = []
+    # 获取当前脚本的文件名
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+    img_path = img_path + '/' + model_name
+    print(img_path)
+    bbox_img_num = 0
+    segm_img_num = 0
+    dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
+    img_path += '/coco_error_analysis'
+    for path in os.listdir(dir_path):
+        # print(path)
+        if path == 'bbox':
+            for bbox_img in os.listdir(dir_path + '/' + path):
+                cat = bbox_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    bbox_img_num += 1
+                    bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
+                    print(bbox_img_dir)
+                    bbox_img_list.append(bbox_img_dir)
+        elif path == 'segm':
+            for segm_img in os.listdir(dir_path + '/' + path):
+                cat = segm_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    segm_img_num += 1
+                    segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
+                    print(segm_img_dir)
+                    segm_img_list.append(segm_img_dir)
+
+    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+
+    return img_list
 
 
 @bp.route('/data_handle', methods=['GET', 'POST'])
