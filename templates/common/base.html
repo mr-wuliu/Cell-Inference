@@ -17,6 +17,19 @@
         <script src="{{ url_for('static',filename='js/fileinput.min.js') }}"></script>
 
     {% endblock %}
+    {% block styles %}
+        <style>
+            .navbar-nav .nav-item.active {
+                background-color: rgba(128, 128, 128, 0.26);
+                color: white;
+                border-radius: 7px;
+            }
+
+            .navbar-nav .nav-item.active a {
+                color: rgba(255, 255, 255, 0.8);
+            }
+        </style>
+    {% endblock %}
 </head>
 <body>
 
@@ -28,51 +41,66 @@
                     aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-{#            <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">#}
+            {#            <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">#}
             <div class="col-sm-1" id="navbarNavDarkDropdown">
 
                 <ul class="navbar-nav justify-content-center">
-{#                <ul class="col-sm-1 justify-content-center">#}
+                    {#                <ul class="col-sm-1 justify-content-center">#}
                     <li class="nav-item dropdown">
-{#                        <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">#}
+                        {#                        <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">#}
                         <button class="btn btn-dark bi bi-list" data-bs-toggle="dropdown" aria-expanded="false">
-{#                            <i class="bi bi-list"></i>#}
+                            {#                            <i class="bi bi-list"></i>#}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="{{ url_for(model.home) }}"><i class="fs-5 bi-house"></i><span class="ms-1 d-none d-sm-inline">&#32Home &#8197</span></a></li>
-                            <li><a class="dropdown-item" href="{{ url_for(model.training) }}"><i class="fs-5 bi-speedometer2"></i><span class="ms-1 d-none d-sm-inline">&#32模型训练</span></a></li>
-                            <li><a class="dropdown-item" href="{{ url_for(model.inference) }}"><i class="fs-5 bi-grid"></i><span class="ms-1 d-none d-sm-inline">&#32图片推理</span></a></li>
-                            <li><a class="dropdown-item" href="{{ url_for(model.result) }}"><i class="fs-5 bi-table"></i><span class="ms-1 d-none d-sm-inline">&#32结果分析</span></a></li>
-                            <li><a class="dropdown-item" href="{{ url_for(model.matrix) }}"><i class="fs-5 bi bi-border-all"></i><span class="ms-1 d-none d-sm-inline">&#32Confusion Matrix</span></a></li>
-                            <li><a class="dropdown-item" href="{{ url_for(model.pr_page) }}"><i class="fs-5 bi bi-bar-chart-line"></i><span class="ms-1 d-none d-sm-inline">&#32PR_Curve &#12288 </span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for(model.home) }}"><i
+                                    class="fs-5 bi-house"></i><span
+                                    class="ms-1 d-none d-sm-inline">&#32Home &#8197</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for(model.training) }}"><i
+                                    class="fs-5 bi-speedometer2"></i><span
+                                    class="ms-1 d-none d-sm-inline">&#32模型训练</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for(model.inference) }}"><i
+                                    class="fs-5 bi-grid"></i><span
+                                    class="ms-1 d-none d-sm-inline">&#32图片推理</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for(model.result) }}"><i
+                                    class="fs-5 bi-table"></i><span class="ms-1 d-none d-sm-inline">&#32结果分析</span></a>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for(model.matrix) }}"><i
+                                    class="fs-5 bi bi-border-all"></i><span class="ms-1 d-none d-sm-inline">&#32Confusion Matrix</span></a>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for(model.pr_page) }}"><i
+                                    class="fs-5 bi bi-bar-chart-line"></i><span class="ms-1 d-none d-sm-inline">&#32PR_Curve &#12288 </span></a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
             </div>
             <a class="navbar-brand" href="{{ url_for('home.home') }}">Histopathology</a>
-{#            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"#}
-{#                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">#}
-{#                <span class="navbar-toggler-icon"></span>#}
-{#            </button>#}
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{{ url_for('mask_rcnn.home') }}">Mask R-CNN</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('condinst.home') }}">CondInst</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('cascade_mask_rcnn.home') }}">Cascade Mask R-CNN</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('ms_rcnn.home') }}">Mask Scoring R-CNN</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('solo.home') }}">Solo</a>
-                    </li>
-                </ul>
-            </div>
+            {#            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"#}
+            {#                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">#}
+            {#                <span class="navbar-toggler-icon"></span>#}
+            {#            </button>#}
+            {% block nav_name %}
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item {% if model.home == 'mask_rcnn.home' %}active{% endif %}">
+                            <a class="nav-link" href="{{ url_for('mask_rcnn.home') }}">Mask R-CNN</a>
+                        </li>
+                        <li class="nav-item {% if model.home == 'condinst.home' %}active{% endif %}">
+                            <a class="nav-link" href="{{ url_for('condinst.home') }}">CondInst</a>
+                        </li>
+                        <li class="nav-item {% if model.home == 'cascade_mask_rcnn.home' %}active{% endif %}">
+                            <a class="nav-link" href="{{ url_for('cascade_mask_rcnn.home') }}">Cascade Mask R-CNN</a>
+                        </li>
+                        <li class="nav-item {% if model.home == 'ms_rcnn.home' %}active{% endif %}">
+                            <a class="nav-link" href="{{ url_for('ms_rcnn.home') }}">Mask Scoring R-CNN</a>
+                        </li>
+                        <li class="nav-item {% if model.home == 'solo.home' %}active{% endif %}">
+                            <a class="nav-link" href="{{ url_for('solo.home') }}">Solo</a>
+                        </li>
+                    </ul>
+                </div>
+            {% endblock %}
+
         </div>
     </nav>
 {% endblock %}
