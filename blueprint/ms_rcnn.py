@@ -7,22 +7,22 @@ import os
 import subprocess
 from pyecharts.charts import Line
 
-# 注册蓝图
-bp = Blueprint('solo', __name__)
+# register blueprint
+bp = Blueprint('ms_rcnn', __name__)
 
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
 current_key = ''
 
 
-# 定义单个模型的路由
+# 定义单个模型的路由, 目前主页面默认调用Mask R-CNN的模型
 class model:
-    home = 'solo.home'
-    inference = 'solo.inference'
-    training = 'solo.training'
-    result = 'solo.result'
-    pr_page = 'solo.pr_page'
-    matrix = 'solo.matrix'
+    home = 'ms_rcnn.home'
+    inference = 'ms_rcnn.inference'
+    training = 'ms_rcnn.training'
+    result = 'ms_rcnn.result'
+    pr_page = 'ms_rcnn.pr_page'
+
 
 
 class Draw(utils.Draw):
@@ -56,8 +56,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/solo_r50_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/epoch_12.pth'
+config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -68,12 +68,12 @@ cache_path = 'flaskr/cache/'
 
 @bp.route('/')
 def home():
-    return render_template('solo/solo_base.html', model=model)
+    return render_template('ms_rcnn/ms_rcnn_base.html', model=model)
 
 
 @bp.route('/inference')
 def inference():
-    return render_template('solo/inference.html', model=model)
+    return render_template('ms_rcnn/inference.html', model=model)
 
 
 # TODO 未修改完全
@@ -81,7 +81,7 @@ def inference():
 def training():
     if request.method == 'GET':
         # 模型启动
-        return render_template('solo/training.html', model=model)
+        return render_template('ms_rcnn/training.html', model=model)
     elif request.method == 'POST':
         key = utils.create_key()
         arguments = {}
@@ -154,13 +154,13 @@ def training():
                                    stdout=log,
                                    stderr=log)
         processes[key] = process
-        return render_template('solo/training_processing.html', model=model, key=key)
+        return render_template('ms_rcnn/training_processing.html', model=model, key=key)
 
-
+# TODO 未修改完全
 @bp.route('/result', methods=['GET', 'POST'])
 def result():
     # 绘制各式图
-    path = 'flaskr/static/model/sample/solo'
+    path = 'flaskr/static/model/sample/mask_rcnn_3x'
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
     latest_file = max(folders) if folders else ''
@@ -185,7 +185,7 @@ def result():
 
     # 特征图展示
     img_list = []
-    img_path = 'img/features/solo'
+    img_path = 'img/features/mask_rcnn'
     num_img = 0
     for img_f in os.listdir('flaskr/static/' + img_path):
         if img_f.startswith('combine'):
@@ -195,16 +195,18 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/Solo t-sne.png'
+        path = 'img/t_sne/Mask R-CNN 3x t-sne.png'
+        text = '数据集经过Mask R-CNN 模型推导, 获取其特征并使用T-SNE降维可视化.'
+        title = 'Mask R-CNN 1x T-SNE图'
 
     return render_template('mask_rcnn/result.html',
                            losses=loss_plot,
                            lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, img_list=img_list,
-                           t_sne=t_sne, loss_title='Solo Loss',
+                           t_sne=t_sne, loss_title='Mask R-CNN Loss',
                            model=model)
 
-# TODO 未修改完全：添加对应的solo文件
+# TODO 未修改完全：添加对应的ms_rcnn文件
 @bp.route('/pr_page')
 def pr_page(page=1):
     page = 1
@@ -250,27 +252,6 @@ def pr_page(page=1):
                            img_list=img_list,
                            model=model)
 
-# @bp.route('/matrix', methods=['GET'])
-@bp.route('/matrix')
-def matrix():
-
-    #  # 初始化 confusion_matrix_file  判断是否有图片生成
-    # confusion_matrix_file = ''
-
-    # # 调用函数
-    # result = calculate_confusion_matrix(config_file, dateload_file, save_dir)
-
-    # # 检查调用结果
-    # if result is not None:
-    #     output = 'Confusion matrix calculated successfully.'
-    #     confusion_matrix_file = os.path.join(save_dir, 'matrix.png')
-    # else:
-    #     output = 'Error calculating confusion matrix.'
-    #     confusion_matrix_file = ''
-
-    # # 将结果传递给模板进行渲染
-    # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
-    return render_template('solo/matrix.html', model=model)
 
 """
 接口请求
@@ -386,6 +367,7 @@ def get_log(key):
         file.close()
         return log_content
 
+
 @bp.route('/metrics/<key>', methods=['GET', 'POST'])
 def get_metrics(key):
     if request.method == 'GET':
@@ -409,4 +391,3 @@ def get_metrics(key):
         return loss_plot
 
         # return loss.dump_options_with_quotes()
-

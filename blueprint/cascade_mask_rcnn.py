@@ -13,7 +13,7 @@ bp = Blueprint('cascade_mask_rcnn', __name__)
 
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
-
+current_key = ''
 
 # 定义单个模型的路由
 class model:
@@ -35,21 +35,21 @@ class Draw(utils.Draw):
         y_bbox_data = []
         y_mask_data = []
         y_centerness_data = []
-        # for d in json_list:
-        #     if 'loss' in d:
-        #         y_data.append(d['loss'])
-        #         y_cls_data.append(d['loss_cls'])
-        #         y_bbox_data.append(d['loss_bbox'])
-        #         y_mask_data.append(d['loss_mask'])
-        #         y_centerness_data.append(d['acc'])
-        #         x_data.append(d['step'])
+        for d in json_list:
+            if 'loss' in d:
+                y_data.append(d['loss'])
+                y_cls_data.append(d['loss_rpn_cls'])
+                y_bbox_data.append(d['loss_rpn_bbox'])
+                y_mask_data.append(d['s0.loss_mask'])
+                y_centerness_data.append(d['s0.acc'])
+                x_data.append(d['step'])
         line = (
             Line().add_xaxis(x_data)
             .add_yaxis('loss', y_data)
-            .add_yaxis('loss_cls', y_cls_data)
-            .add_yaxis('loss_bbox', y_bbox_data)
-            .add_yaxis('loss_mask', y_mask_data)
-            .add_yaxis('acc', y_centerness_data)
+            .add_yaxis('loss_rpn_cls', y_cls_data)
+            .add_yaxis('loss_rpn_bbox', y_bbox_data)
+            .add_yaxis('s0.loss_mask', y_mask_data)
+            .add_yaxis('s0.acc', y_centerness_data)
         )
         # change size
         line.width = '100%'
