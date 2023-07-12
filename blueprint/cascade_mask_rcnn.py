@@ -22,6 +22,7 @@ class model:
     training = 'cascade_mask_rcnn.training'
     result = 'cascade_mask_rcnn.result'
     pr_page = 'cascade_mask_rcnn.pr_page'
+    matrix = 'cascade_mask_rcnn.matrix'
 
 
 # Draw 继承
@@ -272,9 +273,7 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/' + model_name + '.png'
-        text = '数据集经过 Cascade Mask R-CNN模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Cascade Mask R-CNN T-SNE图'
+        path = 'img/t_sne/Cascade Mask R-CNN t-sne.png'
 
     return render_template('cascade_mask_rcnn/result.html',
                            losses=loss_plot,
@@ -283,6 +282,27 @@ def result():
                            t_sne=t_sne, loss_title='Cascade Mask R-CNN Loss',
                            model=model)
 
+# @bp.route('/matrix', methods=['GET'])
+@bp.route('/matrix')
+def matrix():
+
+    #  # 初始化 confusion_matrix_file  判断是否有图片生成
+    # confusion_matrix_file = ''
+
+    # # 调用函数
+    # result = calculate_confusion_matrix(config_file, dateload_file, save_dir)
+
+    # # 检查调用结果
+    # if result is not None:
+    #     output = 'Confusion matrix calculated successfully.'
+    #     confusion_matrix_file = os.path.join(save_dir, 'matrix.png')
+    # else:
+    #     output = 'Error calculating confusion matrix.'
+    #     confusion_matrix_file = ''
+
+    # # 将结果传递给模板进行渲染
+    # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
+    return render_template('cascade_mask_rcnn/matrix.html', model=model)
 
 """
 接口请求

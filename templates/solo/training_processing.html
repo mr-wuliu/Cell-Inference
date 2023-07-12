@@ -1,1 +1,89 @@
 {% extends 'common/base_training_processing.html' %}
+
+{% block show_pic %}
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">模板图片</h5>
+                <p class="card-text">
+                    相似的图片展示可以基于此修改
+                </p>
+                <div id="loss_chart"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block slef_js %}
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
+    <script type="text/javascript" charset="UTF-8">
+        // 获取图片的唯一编码
+        let model_key = '{{ key }}';
+        let upload_key;
+        let stop = false;
+        // 点击显示图片并预览
+        $(document).ready(function () {
+            $('#btn_stop').click(function () {
+                // 获取key
+                var get_key = document.getElementById("model_key").value;
+                if (document.getElementById("model_key").value === '') {
+                    upload_key = model_key;
+                } else {
+                    upload_key = get_key;
+                }
+                var currentURL = window.location.href;
+                var pathParts = currentURL.split('/');
+                var model_path = pathParts[3];
+
+                // 发起AJAX请求
+                var input = {
+                    'key': upload_key,
+                }
+                $.ajax({
+                    url: '/' + model_path + '/stop_train', // Flask的/upload接口的URL
+                    type: 'POST',
+                    data: JSON.stringify(input),
+                    processData: false,
+                    contentType: 'application/json',
+                    success: function (response) {
+                        // 上传成功后的操作
+                        alert(response['apply']);
+                        stop = true;
+                    }
+                });
+
+            });
+            // 轮询请求log
+            setInterval(function () {
+
+                var currentURL = window.location.href;
+                var pathParts = currentURL.split('/');
+                var model_path = pathParts[3];
+                if (!stop) {
+                    $.ajax({
+                        url: '/' + model_path + '/log/' + model_key, // 后端数据接口的 URL
+                        success: function (data) {
+                            // 更新前端页面的数据
+                            $('#log_box').html(data);
+                            var div = document.getElementById('log_box');
+                            div.scrollTop = div.scrollHeight;
+                        }
+                    });
+                    $.ajax({
+                        {#type: "GET",#}
+                        url: '/' + model_path + '/metrics/' + model_key,
+                        success: function (result) {
+                            $("#loss_chart").html(result)
+                        },
+                        error: function () {
+                        },
+                        compile: function () {
+                        }
+                    });
+                }
+            }, 3000); // 间隔时间为 0.5 秒
+
+        });
+
+    </script>
+{% endblock %}
