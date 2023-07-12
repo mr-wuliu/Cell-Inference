@@ -20,6 +20,7 @@ class model:
     training = 'condinst.training'
     result = 'condinst.result'
     pr_page = 'condinst.pr_page'
+    matrix = 'condinst.matrix'
 
 
 # Draw 继承
@@ -227,6 +228,27 @@ def pr_page(page=1):
                            img_list=img_list,
                            model=model)
 
+# @bp.route('/matrix', methods=['GET'])
+@bp.route('/matrix')
+def matrix():
+
+    #  # 初始化 confusion_matrix_file  判断是否有图片生成
+    # confusion_matrix_file = ''
+
+    # # 调用函数
+    # result = calculate_confusion_matrix(config_file, dateload_file, save_dir)
+
+    # # 检查调用结果
+    # if result is not None:
+    #     output = 'Confusion matrix calculated successfully.'
+    #     confusion_matrix_file = os.path.join(save_dir, 'matrix.png')
+    # else:
+    #     output = 'Error calculating confusion matrix.'
+    #     confusion_matrix_file = ''
+
+    # # 将结果传递给模板进行渲染
+    # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
+    return render_template('condinst/matrix.html', model=model)
 
 """
 接口请求
