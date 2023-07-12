@@ -128,7 +128,7 @@ def training():
         # res = stdout.decode('utf-8')
         # output, error = process.communicate()
         processes[key] = process
-        return render_template('mask_rcnn/training_processing.html', model=model, key=key)
+        return render_template('condinst/training_processing.html', model=model, key=key)
 
 
 @bp.route('/result')
@@ -173,8 +173,6 @@ def result():
     # t_sne 展示
     class t_sne:
         path = 'img/t_sne/' + model_name + '.png'
-        text = '数据集经过Condinst 模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Condinst T-SNE图'
 
     return render_template('condinst/result.html',
                            losses=loss_plot,
@@ -364,5 +362,8 @@ def get_metrics(key):
         loss_plot = Draw.Markup(loss.render_embed())
         lr = Draw.generate_lr_chart(json_list)
         lr_plot = Draw.Markup(lr.render_embed())
-        # return loss_plot
-        return loss_plot
+        plot = {
+            'loss_plot': loss_plot,
+            'lr_plot': lr_plot
+        }
+        return plot
