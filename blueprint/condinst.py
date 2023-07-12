@@ -6,10 +6,12 @@ from flask import (
 )
 
 import flaskr.utils as utils
+
 # 注册蓝图
 bp = Blueprint('condinst', __name__)
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
+
 
 # 定义单个模型的路由
 class model:
@@ -17,7 +19,7 @@ class model:
     inference = 'condinst.inference'
     training = 'condinst.training'
     result = 'condinst.result'
-    pr_page = 'mask_rcnn.pr_page'
+    pr_page = 'condinst.pr_page'
 
 
 # Draw 继承
@@ -131,12 +133,11 @@ def training():
 
 @bp.route('/result')
 def result():
-
     model_name = 'condinst'
     # 绘制各式图表
 
     # 遍历文件夹, 搜索日期最新的文件
-    path = 'flaskr/static/model/sample/'+model_name
+    path = 'flaskr/static/model/sample/' + model_name
 
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
@@ -147,7 +148,7 @@ def result():
         if folder.startswith(tuple(str(i) for i in range(10))):
             if latest_file < folder:
                 latest_file = folder
-    path = os.path.join(path,latest_file,'vis_data/scalars.json' )
+    path = os.path.join(path, latest_file, 'vis_data/scalars.json')
 
     json_list = Draw.get_data(path)
     loss = Draw.generate_loss_chart(json_list)
@@ -161,16 +162,17 @@ def result():
 
     # 特征图展示
     img_list = []
-    img_path = 'img/features/'+model_name
+    img_path = 'img/features/' + model_name
     num_img = 0
     for img_f in os.listdir('flaskr/static/' + img_path):
         if img_f.startswith('combine'):
             elm = (str(num_img), img_path + '/' + img_f)
             num_img += 1
             img_list.append(elm)
+
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/'+model_name + '.png'
+        path = 'img/t_sne/' + model_name + '.png'
         text = '数据集经过Condinst 模型推导, 获取其特征并使用T-SNE降维可视化.'
         title = 'Condinst T-SNE图'
 
@@ -181,13 +183,99 @@ def result():
                            t_sne=t_sne, loss_title='Condinst Loss',
                            model=model)
 
+
 @bp.route('/pr_page')
-def pr_page():
-    return render_template('cascade_mask_rcnn/pr_page.html', model=model)
+def pr_page(page=1):
+    page = 1
+    page = str(page)
+    img_path: str = "img/pr_perclass"
+    bbox_img_list = []
+    segm_img_list = []
+    # 获取当前脚本的文件名
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+    img_path = img_path + '/' + model_name
+    print(img_path)
+    bbox_img_num = 0
+    segm_img_num = 0
+    dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
+    img_path += '/coco_error_analysis'
+    for path in os.listdir(dir_path):
+        # print(path)
+        if path == 'bbox':
+            for bbox_img in os.listdir(dir_path + '/' + path):
+                cat = bbox_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    bbox_img_num += 1
+                    bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
+                    print(bbox_img_dir)
+                    bbox_img_list.append(bbox_img_dir)
+        elif path == 'segm':
+            for segm_img in os.listdir(dir_path + '/' + path):
+                cat = segm_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    segm_img_num += 1
+                    segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
+                    print(segm_img_dir)
+                    segm_img_list.append(segm_img_dir)
+
+    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+    img_id_list = {"img_segm": "img_segm", "img_bbox": "img_bbox"}
+
+    return render_template(model_name + '/pr_page.html',
+                           img_id_list=img_id_list,
+                           img_list=img_list,
+                           model=model)
+
 
 """
 接口请求
 """
+
+
+@bp.route('/pr_page_update', methods=['GET', 'POST'])
+def pr_page_update():
+    page = request.args.get('page')
+    page = str(page)
+    img_path: str = "img/pr_perclass"
+    bbox_img_list = []
+    segm_img_list = []
+    # 获取当前脚本的文件名
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+    img_path = img_path + '/' + model_name
+    print(img_path)
+    bbox_img_num = 0
+    segm_img_num = 0
+    dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
+    img_path += '/coco_error_analysis'
+    for path in os.listdir(dir_path):
+        # print(path)
+        if path == 'bbox':
+            for bbox_img in os.listdir(dir_path + '/' + path):
+                cat = bbox_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    bbox_img_num += 1
+                    bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
+                    print(bbox_img_dir)
+                    bbox_img_list.append(bbox_img_dir)
+        elif path == 'segm':
+            for segm_img in os.listdir(dir_path + '/' + path):
+                cat = segm_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    segm_img_num += 1
+                    segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
+                    print(segm_img_dir)
+                    segm_img_list.append(segm_img_dir)
+
+    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+
+    return img_list
+
 
 @bp.route('/data_handle', methods=['GET', 'POST'])
 def img_inference():
@@ -218,6 +306,8 @@ def img_inference():
         return {'apply': 'ERROR', 'key': ''}
     else:
         return {'apply': 'error', 'key': ''}
+
+
 @bp.route('/data_handle/res', methods=['GET', 'POST'])
 def img_inference_res():
     if request.method == 'POST':
@@ -227,7 +317,6 @@ def img_inference_res():
 
         return img_stream
     return 'error'
-
 
 
 @bp.route('/stop_train', methods=['GET', 'POST'])
