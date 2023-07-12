@@ -1,30 +1,30 @@
-import mmcv
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, render_template, request, session, url_for, jsonify
 )
+from pyecharts.options.global_options import AriaOpts
 import flaskr.utils as utils
-import sys
 import os
 import subprocess
 from pyecharts.charts import Line
 
-# 注册蓝图
-bp = Blueprint('cascade_mask_rcnn', __name__)
+# register blueprint
+bp = Blueprint('solo', __name__)
 
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
 current_key = ''
 
-# 定义单个模型的路由
+
+# 定义单个模型的路由, 目前主页面默认调用Mask R-CNN的模型
 class model:
-    home = 'cascade_mask_rcnn.home'
-    inference = 'cascade_mask_rcnn.inference'
-    training = 'cascade_mask_rcnn.training'
-    result = 'cascade_mask_rcnn.result'
-    pr_page = 'cascade_mask_rcnn.pr_page'
+    home = 'solo.home'
+    inference = 'solo.inference'
+    training = 'solo.training'
+    result = 'solo.result'
+    pr_page = 'solo.pr_page'
 
 
-# Draw 继承
+
 class Draw(utils.Draw):
     @classmethod
     def generate_loss_chart(self, json_list) -> Line:
@@ -37,18 +37,18 @@ class Draw(utils.Draw):
         for d in json_list:
             if 'loss' in d:
                 y_data.append(d['loss'])
-                y_cls_data.append(d['loss_rpn_cls'])
-                y_bbox_data.append(d['loss_rpn_bbox'])
-                y_mask_data.append(d['s0.loss_mask'])
-                y_centerness_data.append(d['s0.acc'])
+                y_cls_data.append(d['loss_cls'])
+                y_bbox_data.append(d['loss_bbox'])
+                y_mask_data.append(d['loss_mask'])
+                y_centerness_data.append(d['acc'])
                 x_data.append(d['step'])
         line = (
             Line().add_xaxis(x_data)
             .add_yaxis('loss', y_data)
-            .add_yaxis('loss_rpn_cls', y_cls_data)
-            .add_yaxis('loss_rpn_bbox', y_bbox_data)
-            .add_yaxis('s0.loss_mask', y_mask_data)
-            .add_yaxis('s0.acc', y_centerness_data)
+            .add_yaxis('loss_cls', y_cls_data)
+            .add_yaxis('loss_bbox', y_bbox_data)
+            .add_yaxis('loss_mask', y_mask_data)
+            .add_yaxis('acc', y_centerness_data)
         )
         # change size
         line.width = '100%'
@@ -56,13 +56,11 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/cascade-mask-rcnn_x101-64x4d_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/cascade_epoch_12.pth'
+config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
-# pyecharts配置
-REMOTE_HOST = "https://pyecharts.github.io/assets/js"
 """
 页面展示
 """
@@ -70,93 +68,20 @@ REMOTE_HOST = "https://pyecharts.github.io/assets/js"
 
 @bp.route('/')
 def home():
-    return render_template('cascade_mask_rcnn/cascade_mask_rcnn_base.html', model=model)
+    return render_template('solo/solo_base.html', model=model)
 
 
 @bp.route('/inference')
 def inference():
-    return render_template('cascade_mask_rcnn/inference.html', model=model)
+    return render_template('solo/inference.html', model=model)
 
 
-@bp.route('/pr_page?page=1')
-def register():
-    return "<a href='/pr_page'>跳转重定向页面redirect</a>"
-
-
-@bp.route('/pr_page')
-def pr_page(page=1):
-    # 特征图展示
-    # img_list = []
-    # img_path = 'img/features/mask_rcnn'
-    # num_img = 0
-    # for img_f in os.listdir('flaskr/static/' + img_path):
-    #     if img_f.startswith('combine'):
-    #         elm = (str(num_img), img_path + '/' + img_f)
-    #         num_img += 1
-    #         img_list.append(elm)
-    # from urllib.parse import unquote
-    #
-    # page = request.args.get('page')
-    # try:
-    #     decoded_page = unquote(page)
-    # except:
-    #     # 解码失败，说明参数值没有被编码，使用原始值
-    #     decoded_page = page
-
-    page = 1
-    page = str(page)
-    img_path: str = "img/pr_perclass"
-    bbox_img_list = []
-    segm_img_list = []
-    # 获取当前脚本的文件名
-    script_name = model.home
-    if script_name.startswith("cascade"):
-        script_name = "cascade"
-    model_name = script_name.split('.')[0]
-    img_path = img_path + '/' + model_name
-    print(img_path)
-    bbox_img_num = 0
-    segm_img_num = 0
-    dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
-    img_path += '/coco_error_analysis'
-    for path in os.listdir(dir_path):
-        # print(path)
-        if path == 'bbox':
-            for bbox_img in os.listdir(dir_path + '/' + path):
-                cat = bbox_img.split('/')[-1].split('-')[1]
-                # print(bbox_img.split('/')[-1].split('-')[1])
-                # print(page)
-                # print(bbox_img.split('/')[-1].split('-')[1] == page)
-                if cat == page or (cat == 'allclass' and page == '6'):
-                    bbox_img_num += 1
-                    bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
-                    print(bbox_img_dir)
-                    bbox_img_list.append(bbox_img_dir)
-        elif path == 'segm':
-            for segm_img in os.listdir(dir_path + '/' + path):
-                cat = segm_img.split('/')[-1].split('-')[1]
-                if cat == page or (cat == 'allclass' and page == '6'):
-                    segm_img_num += 1
-                    segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
-                    print(segm_img_dir)
-                    segm_img_list.append(segm_img_dir)
-
-    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
-    img_id_list = {"img_segm": "img_segm", "img_bbox": "img_bbox"}
-
-    # selected_category_value = "Category All"
-
-    return render_template('cascade_mask_rcnn/pr_page.html',
-                           img_id_list=img_id_list,
-                           img_list=img_list,
-                           model=model)
-
-
+# TODO 未修改完全
 @bp.route('/training', methods=['GET', 'POST'])
 def training():
     if request.method == 'GET':
         # 模型启动
-        return render_template('cascade_mask_rcnn/training.html', model=model)
+        return render_template('solo/training.html', model=model)
     elif request.method == 'POST':
         key = utils.create_key()
         arguments = {}
@@ -204,6 +129,7 @@ def training():
                 lines[i] = 'set_batch_size=' + str(arguments['batch_size']) + '\n'
             if lines[i].startswith('# end var'):
                 lines[i] = ''
+                break
         # 写入新的 Python 文件
         config = 'flaskr/static/model/config/train_' + key + '.py'
         output = os.path.join(cache_path, 'work_dir_' + key)
@@ -228,16 +154,13 @@ def training():
                                    stdout=log,
                                    stderr=log)
         processes[key] = process
-        return render_template('cascade_mask_rcnn/training_processing.html', model=model, key=key)
+        return render_template('solo/training_processing.html', model=model, key=key)
 
-
-@bp.route('/result')
+# TODO 未修改完全
+@bp.route('/result', methods=['GET', 'POST'])
 def result():
     # 绘制各式图
-    model_name = 'cascade-mask-rcnn'
-    # current_key = 'uvA4nQtShOcB'
-    # path = os.path.join(cache_path,'work_dir_'+current_key)
-    path = 'flaskr/static/model/sample/' + model_name
+    path = 'flaskr/static/model/sample/mask_rcnn_3x'
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
     latest_file = max(folders) if folders else ''
@@ -272,15 +195,61 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/' + model_name + '.png'
-        text = '数据集经过 Cascade Mask R-CNN模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Cascade Mask R-CNN T-SNE图'
+        path = 'img/t_sne/Mask R-CNN 3x t-sne.png'
+        text = '数据集经过Mask R-CNN 模型推导, 获取其特征并使用T-SNE降维可视化.'
+        title = 'Mask R-CNN 1x T-SNE图'
 
-    return render_template('cascade_mask_rcnn/result.html',
+    return render_template('mask_rcnn/result.html',
                            losses=loss_plot,
                            lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, img_list=img_list,
-                           t_sne=t_sne, loss_title='Cascade Mask R-CNN Loss',
+                           t_sne=t_sne, loss_title='Mask R-CNN Loss',
+                           model=model)
+
+# TODO 未修改完全：添加对应的solo文件
+@bp.route('/pr_page')
+def pr_page(page=1):
+    page = 1
+    page = str(page)
+    img_path: str = "img/pr_perclass"
+    bbox_img_list = []
+    segm_img_list = []
+    # 获取当前脚本的文件名
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+    img_path = img_path + '/' + model_name
+    print(img_path)
+    bbox_img_num = 0
+    segm_img_num = 0
+    dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
+    img_path += '/coco_error_analysis'
+    for path in os.listdir(dir_path):
+        # print(path)
+        if path == 'bbox':
+            for bbox_img in os.listdir(dir_path + '/' + path):
+                cat = bbox_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    bbox_img_num += 1
+                    bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
+                    print(bbox_img_dir)
+                    bbox_img_list.append(bbox_img_dir)
+        elif path == 'segm':
+            for segm_img in os.listdir(dir_path + '/' + path):
+                cat = segm_img.split('/')[-1].split('-')[1]
+                if cat == page or (cat == 'allclass' and page == '6'):
+                    segm_img_num += 1
+                    segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
+                    print(segm_img_dir)
+                    segm_img_list.append(segm_img_dir)
+
+    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+    img_id_list = {"img_segm": "img_segm", "img_bbox": "img_bbox"}
+
+    return render_template(model_name + '/pr_page.html',
+                           img_id_list=img_id_list,
+                           img_list=img_list,
                            model=model)
 
 
@@ -288,7 +257,7 @@ def result():
 接口请求
 """
 
-
+# TODO 未修改完全
 @bp.route('/pr_page_update', methods=['GET', 'POST'])
 def pr_page_update():
     page = request.args.get('page')
@@ -312,9 +281,6 @@ def pr_page_update():
         if path == 'bbox':
             for bbox_img in os.listdir(dir_path + '/' + path):
                 cat = bbox_img.split('/')[-1].split('-')[1]
-                # print(bbox_img.split('/')[-1].split('-')[1])
-                # print(page)
-                # print(bbox_img.split('/')[-1].split('-')[1] == page)
                 if cat == page or (cat == 'allclass' and page == '6'):
                     bbox_img_num += 1
                     bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
@@ -323,9 +289,6 @@ def pr_page_update():
         elif path == 'segm':
             for segm_img in os.listdir(dir_path + '/' + path):
                 cat = segm_img.split('/')[-1].split('-')[1]
-                # print(bbox_img.split('/')[-1].split('-')[1])
-                # print(page)
-                # print(bbox_img.split('/')[-1].split('-')[1] == page)
                 if cat == page or (cat == 'allclass' and page == '6'):
                     segm_img_num += 1
                     segm_img_dir = (str(segm_img_num), img_path + '/' + path + '/' + segm_img)
@@ -333,7 +296,6 @@ def pr_page_update():
                     segm_img_list.append(segm_img_dir)
 
     img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
-    img_id_list = {"img_segm": "img_segm", "img_bbox": "img_bbox"}
 
     return img_list
 
@@ -351,7 +313,7 @@ def img_inference():
         img = base64.b64decode(img_stream)
         # 图片唯一标识
         key = utils.create_key()
-        with open(cache_path + key + '.png', 'wb') as img_decode:
+        with open(os.path.join(cache_path, key + '.png'), 'wb') as img_decode:
             img_decode.write(img)
         img_decode.close()
 
@@ -373,7 +335,6 @@ def img_inference():
 def img_inference_res():
     if request.method == 'POST':
         key = request.json['key']
-        print(key)
         img_stream = utils.return_img_stream(
             os.path.join(cache_path, 'inf_' + key + '.png'))
 
@@ -405,3 +366,28 @@ def get_log(key):
         # log_content = re.sub(r'\n', '<br>', log_content)
         file.close()
         return log_content
+
+
+@bp.route('/metrics/<key>', methods=['GET', 'POST'])
+def get_metrics(key):
+    if request.method == 'GET':
+        # 绘制各式图
+        path = 'flaskr/cache/work_dir_' + key
+        # 遍历文件夹, 搜索日期最新的文件
+        folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
+        latest_file = max(folders) if folders else ''
+        if not latest_file:
+            return
+        for folder in os.listdir(path):
+            if folder.startswith(tuple(str(i) for i in range(10))):
+                if latest_file < folder:
+                    latest_file = folder
+        path = os.path.join(path, latest_file, 'vis_data/scalars.json')
+
+        json_list = Draw.get_data(path)
+        loss = Draw.generate_loss_chart(json_list)
+        loss_plot = Draw.Markup(loss.render_embed())
+
+        return loss_plot
+
+        # return loss.dump_options_with_quotes()
