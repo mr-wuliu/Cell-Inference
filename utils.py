@@ -85,7 +85,7 @@ class Draw:
         for d in json_list:
             if 'lr' in d:
                 y_data.append(d['lr'])
-                x_data.append(d['step'])
+                x_data.append(str(d['step']))
         line = (
             Line().add_xaxis(x_data)
             .add_yaxis('Learning Rate', y_data)
@@ -112,7 +112,7 @@ class Draw:
                     y_centerness_data.append(d['loss_centerness'])
                 else:
                     y_centerness_data.append(d['acc'])
-                x_data.append(d['step'])
+                x_data.append(str(d['step']))
         line = (
             Line().add_xaxis(x_data)
             .add_yaxis('loss', y_data)

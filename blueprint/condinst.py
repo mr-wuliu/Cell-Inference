@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
 
 import flaskr.utils as utils
@@ -343,3 +343,26 @@ def get_log(key):
         # log_content = re.sub(r'\n', '<br>', log_content)
         file.close()
         return log_content
+@bp.route('/metrics/<key>', methods=['GET', 'POST'])
+def get_metrics(key):
+    if request.method == 'GET':
+        # 绘制各式图
+        path = 'flaskr/cache/work_dir_'+key
+        # 遍历文件夹, 搜索日期最新的文件
+        folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
+        latest_file = max(folders) if folders else ''
+        if not latest_file:
+            return
+        for folder in os.listdir(path):
+            if folder.startswith(tuple(str(i) for i in range(10))):
+                if latest_file < folder:
+                    latest_file = folder
+        path = os.path.join(path, latest_file, 'vis_data/scalars.json')
+
+        json_list = Draw.get_data(path)
+        loss = Draw.generate_loss_chart(json_list)
+        loss_plot = Draw.Markup(loss.render_embed())
+        lr = Draw.generate_lr_chart(json_list)
+        lr_plot = Draw.Markup(lr.render_embed())
+        # return loss_plot
+        return loss_plot
