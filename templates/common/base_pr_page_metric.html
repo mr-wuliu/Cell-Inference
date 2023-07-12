@@ -1,0 +1,33 @@
+{% extends 'common/base_pr_page.html' %}
+{% block pr_page_metric %}
+    <div class="container-xxl bd-gutter mt-3 my-md-4 bd-layout">
+{#        <h1 style="color: rgb(65, 131, 196)">PR_Metric</h1>#}
+
+        <h2>Metric Paraphrase：</h2>
+        <div class="col-md-6 mt-4 mb-4">
+        <h4>1. Bbox区域类型: </h4>
+        <p>这是表示检测框的区域大小的名称列表。列表包含了不同的区域大小，分别是：</p>
+        <ul>
+            <li>所有区域(allarea)、</li>
+            <li>小区域(small)、</li>
+            <li>中等区域(medium)、</li>
+            <li>大区域(large)。</li>
+
+        </ul>
+        <p>这些区域大小通常是基于目标的尺寸或面积定义的。</p>
+        </div>
+        <div class="col-md-6 mt-4 mb-4">
+        <h4>2. 图例列表: </h4>
+        <p>这是表示错误类型的列表。列表包含了不同的错误类型，分别是：</p>
+        <ul>
+            <li>对应类别75% IoU(C75)、</li>
+            <li>对应类别50% IoU(C50)、</li>
+            <li>定位错误(Loc)、</li>
+            <li>相似错误(Sim)、</li>
+            <li>其他错误(Oth)、</li>
+            <li>背景错误(BG)、</li>
+            <li>漏检错误(FN)、</li>
+        </ul>
+        </div>
+    </div>
+{% endblock %}
