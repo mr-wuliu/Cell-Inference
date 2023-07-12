@@ -22,6 +22,8 @@ class model:
     training = 'ms_rcnn.training'
     result = 'ms_rcnn.result'
     pr_page = 'ms_rcnn.pr_page'
+    matrix = 'cascade_mask_rcnn.matrix'
+
 
 
 
@@ -65,6 +67,11 @@ cache_path = 'flaskr/cache/'
 页面展示
 """
 
+
+@bp.route('/matrix')
+def matrix():
+    # # 将结果传递给模板进行渲染
+    return render_template('ms_rcnn/matrix.html', model=model)
 
 @bp.route('/')
 def home():

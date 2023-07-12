@@ -20,7 +20,7 @@
                                 (Category Type)
                             </a>
                             {#1: Neoplastic 2:Connective 3:Inflammatory 4:Non-Neoplasti Epithelial(Non-neo. Epi)  5:Dead#}
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" id="category-dropdown-menu">
                                 <li><a class="dropdown-item" href="#" data-value="Category 1:Neoplastic">Category
                                     1:Neoplastic</a>
                                 </li>
@@ -169,7 +169,7 @@
         var selected_category_value = '{{ selected_category_value }}';
         $(document).ready(function () {
             // 监听下拉菜单选项的点击事件
-            $(".dropdown-menu a").click(function () {
+            $("#category-dropdown-menu .dropdown-menu a").click(function () {
                 event.preventDefault(); // 阻止默认点击事件
                 // 获取选项的值
                 var selectedValue = $(this).data("value");

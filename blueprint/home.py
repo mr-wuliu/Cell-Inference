@@ -11,6 +11,7 @@ class model:
     training = 'ms_rcnn.training'
     result = 'ms_rcnn.result'
     pr_page = 'ms_rcnn.pr_page'
+    matrix = 'mask_rcnn.matrix'
 
 @bp.route('/')
 def home():
