@@ -204,7 +204,7 @@ def result():
                            t_sne=t_sne, loss_title='Solo Loss',
                            model=model)
 
-# TODO 未修改完全：添加对应的solo文件
+# FINISH 未修改完全：添加对应的solo文件
 @bp.route('/pr_page')
 def pr_page(page=1):
     page = 1
@@ -276,7 +276,7 @@ def matrix():
 接口请求
 """
 
-# TODO 未修改完全
+# FINISH 未修改完全
 @bp.route('/pr_page_update', methods=['GET', 'POST'])
 def pr_page_update():
     page = request.args.get('page')

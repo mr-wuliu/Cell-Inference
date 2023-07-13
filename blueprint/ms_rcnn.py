@@ -175,6 +175,12 @@ def training():
 def result():
     # 绘制各式图
     path = 'flaskr/static/model/sample/ms'
+
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
     latest_file = max(folders) if folders else ''
@@ -218,7 +224,7 @@ def result():
                            t_sne=t_sne, loss_title='Mask Scoring R-CNN t-sne.png Loss',
                            model=model)
 
-# TODO 未修改完全：添加对应的ms_rcnn文件
+# FINISH 未修改完全：添加对应的ms_rcnn文件
 @bp.route('/pr_page')
 def pr_page(page=1):
     page = 1

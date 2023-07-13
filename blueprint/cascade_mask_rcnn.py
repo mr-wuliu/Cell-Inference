@@ -38,6 +38,7 @@ class Draw(utils.Draw):
         y_centerness_data = []
         for d in json_list:
             if 'loss' in d:
+                d = utils.list_round(d)
                 y_data.append(d['loss'])
                 y_cls_data.append(d['loss_rpn_cls'])
                 y_bbox_data.append(d['loss_rpn_bbox'])
@@ -258,7 +259,7 @@ def result():
 
     # 特征图展示
     img_list = []
-    img_path = 'img/features/mask_rcnn'
+    img_path = 'img/features/' + model_name
     num_img = 0
     for img_f in os.listdir('flaskr/static/' + img_path):
         if img_f.startswith('combine'):
