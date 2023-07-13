@@ -254,15 +254,9 @@ def pr_page(page=1):
 # @bp.route('/matrix', methods=['GET'])
 @bp.route('/matrix')
 def matrix():
-    # script_name = model.home
-    # if script_name.startswith("mask_rcnn"):
-    #     script_name = "mask_rcnn"
-    # model_name = script_name.split('.')[0]
-    # file_name = 'img/confusion_matrix/' + model_name + '/confusion_matrix.png'
-    file_name = 'img/confusion_matrix/mask_rcnn/MaskR-CNN.png'
-    # # 将结果传递给模板进行渲染
-    return render_template('mask_rcnn/matrix.html', model=model,
-                           file_name=file_name)
+    # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
+    path = '/img/confusion_matrix/mask_rcnn/confusion_matrix.png'
+    return render_template('mask_rcnn/matrix.html', model=model, file_name=path)
 
 """
 接口请求

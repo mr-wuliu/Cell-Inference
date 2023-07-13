@@ -196,7 +196,6 @@ def pr_page(page=1):
         script_name = "cascade"
     model_name = script_name.split('.')[0]
     img_path = img_path + '/' + model_name
-    print(img_path)
     bbox_img_num = 0
     segm_img_num = 0
     dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'
@@ -248,7 +247,8 @@ def matrix():
 
     # # 将结果传递给模板进行渲染
     # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
-    return render_template('condinst/matrix.html', model=model)
+    path = '/img/confusion_matrix/condinst/confusion_matrix.png'
+    return render_template('condinst/matrix.html', model=model, file_name=path)
 
 """
 接口请求
