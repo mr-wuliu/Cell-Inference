@@ -84,6 +84,7 @@ class Draw:
         x_data = []
         for d in json_list:
             if 'lr' in d:
+                d = list_round(d,4)
                 y_data.append(d['lr'])
                 x_data.append(str(d['step']))
         line = (
@@ -104,6 +105,7 @@ class Draw:
         y_centerness_data = []
         for d in json_list:
             if 'loss' in d:
+                d = list_round(d)
                 y_data.append(d['loss'])
                 y_cls_data.append(d['loss_cls'])
                 y_bbox_data.append(d['loss_bbox'])
@@ -218,5 +220,14 @@ class Draw:
 #             print("指定路径不存在或不是有效的文件或文件夹路径。")
 
 
+def list_round(d:dict,p:int=2):
+    f = dict({})
+    for key in d:
+        print(d[key])
+        if type(d[key]) == float:
+            f[key] = round(d[key], p)
+        else:
+            f[key] = d[key]
+    return f
 if __name__ == '__main__':
     pass
