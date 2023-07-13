@@ -255,7 +255,7 @@ def pr_page(page=1):
 @bp.route('/matrix')
 def matrix():
     # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
-    path = '/img/confusion_matrix/mask_rcnn/confusion_matrix.png'
+    path = 'img/confusion_matrix/mask_rcnn/MaskR-CNN.png'
     return render_template('mask_rcnn/matrix.html', model=model, file_name=path)
 
 """

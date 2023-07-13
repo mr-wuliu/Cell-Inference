@@ -22,7 +22,7 @@ class model:
     training = 'ms_rcnn.training'
     result = 'ms_rcnn.result'
     pr_page = 'ms_rcnn.pr_page'
-    matrix = 'cascade_mask_rcnn.matrix'
+    matrix = 'ms_rcnn.matrix'
 
 
 
@@ -71,7 +71,8 @@ cache_path = 'flaskr/cache/'
 @bp.route('/matrix')
 def matrix():
     # # 将结果传递给模板进行渲染
-    return render_template('ms_rcnn/matrix.html', model=model)
+    file_name = 'img/confusion_matrix/ms_rcnn/confusion_matrix.png'
+    return render_template('ms_rcnn/matrix.html', model=model,file_name=file_name)
 
 @bp.route('/')
 def home():
