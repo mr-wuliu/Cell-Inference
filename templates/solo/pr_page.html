@@ -1,2 +1,125 @@
 {% extends 'common/base_pr_page.html' %}
 
+{% block slef_js %}
+    <script>
+        // 声明全局变量并初始化
+        var selected_category_value = '{{ selected_category_value }}';
+        $(document).ready(function () {
+            // 监听指定id下拉菜单选项的点击事件：事件委托写法
+            // $("#category-dropdown-menu").on("click", "a.dropdown-item", function (event) {
+            // ...
+
+            // 直接监听click事件写法:
+            // .dropdown-item 是 <a> 元素的 class, 写为a.dropdown
+            $("#category-dropdown-menu a.dropdown-item").click(function (event) {
+                event.preventDefault(); // 阻止默认点击事件
+                // 获取选项的值
+                var selectedValue = $(this).data("value");
+                console.log(selectedValue)
+                var cat_number = 1
+                {#var encodedValue = encodeURIComponent(selectedValue);#}
+                if (selectedValue === "Category All") {
+                    console.log("The string is equal to 'Category All'");
+                    cat_number = 6
+                } else {
+                    console.log("The string is not equal to 'Category All'");
+                    var regex = /\d+/;  // 匹配一个或多个数字
+                    var match = selectedValue.match(regex);
+                    if (match) {
+                        cat_number = parseInt(match[0]);  // 将匹配到的数字转换为整数
+                        console.log(cat_number);  // 输出提取到的数字
+                    } else {
+                        console.log("No cat_number found");
+                    }
+                }
+                var currentURL = window.location.href;
+                var pathParts = currentURL.split('/');
+                var model_path = pathParts[3];
+
+                // 更新 "(Metric Type)" 的文本为选项的值
+                $("#metric-type-dropdown").text(selectedValue);
+
+                // 更新选择的Category Type标签的文本为选项的值
+                // $("#metric-type-label").text(selectedValue);
+
+                // 更新隐藏域中的值
+                $("#selected-category-value").val(selectedValue);
+
+                // 将选项的值发送到后端视图函数
+                $.ajax({
+                    url: '/' + model_path + "/pr_page_update",
+                    type: "GET",
+                    data: {page: cat_number},
+                    success: function (response) {
+                        // 根据后端返回的数据进行相应处理，更新页面内容等
+                        // 更新轮播的代码块
+                        var carousel_inner_bbox = $("#img_bbox .carousel-inner");
+                        var carousel_inner_segm = $("#img_segm .carousel-inner");
+                        carousel_inner_bbox.empty();  // 清空原有的内容
+                        carousel_inner_segm.empty();
+                        // 循环添加新的轮播项
+                        var bbox_img_list = response['bbox_img_list'];
+                        var segm_img_list = response['segm_img_list'];
+                        for (var bbox_key in bbox_img_list) {
+                            if (bbox_img_list.hasOwnProperty(bbox_key)) {
+                                var bbox_index = bbox_key;
+                                var bbox_img_elm = bbox_img_list[bbox_key];
+                                var bbox_imgPath = bbox_img_elm[1]
+                                console.log(bbox_imgPath);  // debug log
+                                var bbox_carouselItem = $("<div>", {
+                                    class: "carousel-item",
+                                    "data-bs-interval": "1000000"
+                                });
+                                if (bbox_index === '0') {
+                                    bbox_carouselItem.addClass("active");
+                                }
+                                var bbox_imgElement = $("<img>", {
+                                    src: '/static/' + bbox_imgPath,
+                                    class: "d-block w-100",
+                                    alt: "Slide " + bbox_index
+                                });
+                                bbox_carouselItem.append(bbox_imgElement);
+                                carousel_inner_bbox.append(bbox_carouselItem);
+                            }
+                        }
+                        for (var segm_key in segm_img_list) {
+                            if (segm_img_list.hasOwnProperty(segm_key)) {
+                                var segm_index = segm_key;
+                                var segm_img_elm = segm_img_list[segm_key];
+                                var segm_imgPath = segm_img_elm[1]
+                                console.log(segm_imgPath);  // debug log
+                                var segm_carouselItem = $("<div>", {
+                                    class: "carousel-item",
+                                    "data-bs-interval": "1000000"
+                                });
+                                if (segm_index === '3') {
+                                    segm_carouselItem.addClass("active");
+                                }
+                                var segm_imgElement = $("<img>", {
+                                    src: '/static/' + segm_imgPath,
+                                    class: "d-block w-100",
+                                    alt: "Slide " + segm_index
+                                });
+                                segm_carouselItem.append(segm_imgElement);
+                                carousel_inner_segm.append(segm_carouselItem);
+                            }
+                        }
+                        {#var imgList = response['bbox_img_list'];#}
+                        {#for (var key in imgList) {#}
+                        {#    if (imgList.hasOwnProperty(key)) {#}
+                        {#        var index = key;#}
+                        {#        var imgPath = imgList[key];#}
+                        {#        // 选择页面上的图片元素并更新它们的 src 属性#}
+                        {#        $("#img_bbox .carousel-item:nth-child(" + index + ") img").attr("src", "/static/" + imgPath);#}
+                        {#    }#}
+                        {# }#}
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+
+{% endblock %}
