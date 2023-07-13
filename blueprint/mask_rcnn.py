@@ -271,7 +271,8 @@ def matrix():
 
     # # 将结果传递给模板进行渲染
     # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
-    return render_template('mask_rcnn/matrix.html', model=model)
+    path = '/img/confusion_matrix/mask_rcnn/confusion_matrix.png'
+    return render_template('mask_rcnn/matrix.html', model=model, file_name=path)
 
 """
 接口请求
