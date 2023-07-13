@@ -29,8 +29,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.py'
-checkpoint_file: str = 'flaskr/static/model/condinst_r101_fpn_ms-poly-90k_coco_instance.pth'
+config_file: str = 'flaskr/static/model/condinst_r101/condinst_r101_fpn_ms-poly-90k_coco_instance.py'
+checkpoint_file: str = 'flaskr/static/model/condinst_r101/condinst_r101_fpn_ms-poly-90k_coco_instance.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 

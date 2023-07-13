@@ -58,8 +58,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/cascade-mask-rcnn_x101-64x4d_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/cascade_epoch_12.pth'
+config_file: str = 'flaskr/static/model/cascade/cascade.py'
+checkpoint_file: str = 'flaskr/static/model/cascade/cascade.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -190,7 +190,7 @@ def training():
             arguments[arg_key] = arg_val
 
         # 读取 config.f 文件
-        with open('flaskr/static/model/base/mask-rcnn_r101_fpn_ms-poly-3x_coco.f', 'r') as file:
+        with open('flaskr/static/model/base/cascade.f', 'r') as file:
             lines = file.readlines()
         file.close()
 

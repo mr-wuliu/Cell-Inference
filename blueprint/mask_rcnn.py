@@ -40,7 +40,7 @@ class Draw(utils.Draw):
                 y_cls_data.append(d['loss_cls'])
                 y_bbox_data.append(d['loss_bbox'])
                 y_mask_data.append(d['loss_mask'])
-                y_centerness_data.append(d['acc'])
+                # y_centerness_data.append(d['acc'])
                 x_data.append(d['step'])
         line = (
             Line().add_xaxis(x_data)
@@ -48,7 +48,7 @@ class Draw(utils.Draw):
             .add_yaxis('loss_cls', y_cls_data)
             .add_yaxis('loss_bbox', y_bbox_data)
             .add_yaxis('loss_mask', y_mask_data)
-            .add_yaxis('acc', y_centerness_data)
+            # .add_yaxis('acc', y_centerness_data)
         )
         # change size
         line.width = '100%'
@@ -56,8 +56,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.pth'
+config_file: str = 'flaskr/static/model/mask_rcnn_3x_train_b/mask-rcnn_r101_fpn_ms-poly-3x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/mask_rcnn_3x_train_b/epoch_12.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -186,6 +186,8 @@ def result():
     img_list = []
     img_path = 'img/features/mask_rcnn'
     num_img = 0
+
+
     for img_f in os.listdir('flaskr/static/' + img_path):
         if img_f.startswith('combine'):
             elm = (str(num_img), img_path + '/' + img_f)

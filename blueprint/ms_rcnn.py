@@ -58,8 +58,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.pth'
+config_file: str = 'flaskr/static/model/ms/ms_rcnn.py'
+checkpoint_file: str = 'flaskr/static/model/ms/epoch_24.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -120,7 +120,7 @@ def training():
             arguments[arg_key] = arg_val
 
         # 读取 config.f 文件
-        with open('flaskr/static/model/base/mask-rcnn_r101_fpn_ms-poly-3x_coco.f', 'r') as file:
+        with open('flaskr/static/model/base/ms_rcnn.f', 'r') as file:
             lines = file.readlines()
         file.close()
 
@@ -167,7 +167,7 @@ def training():
 @bp.route('/result', methods=['GET', 'POST'])
 def result():
     # 绘制各式图
-    path = 'flaskr/static/model/sample/mask_rcnn_3x'
+    path = 'flaskr/static/model/sample/ms'
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
     latest_file = max(folders) if folders else ''
@@ -202,15 +202,13 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/Mask R-CNN 3x t-sne.png'
-        text = '数据集经过Mask R-CNN 模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Mask R-CNN 1x T-SNE图'
+        path = 'img/t_sne/Mask Scoring R-CNN t-sne.png'
 
     return render_template('mask_rcnn/result.html',
                            losses=loss_plot,
                            lr=lr_plot, bbox_map=bbox_map_plot,
                            seg_map=seg_map_plot, img_list=img_list,
-                           t_sne=t_sne, loss_title='Mask R-CNN Loss',
+                           t_sne=t_sne, loss_title='Mask Scoring R-CNN t-sne.png Loss',
                            model=model)
 
 # TODO 未修改完全：添加对应的ms_rcnn文件
