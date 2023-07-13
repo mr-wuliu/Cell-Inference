@@ -313,7 +313,7 @@ def pr_page_update():
                     print(segm_img_dir)
                     segm_img_list.append(segm_img_dir)
 
-    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+    img_list = {"bbox_img_list": bbox_img_list[::-1], "segm_img_list": segm_img_list[::-1]}
 
     return img_list
 
