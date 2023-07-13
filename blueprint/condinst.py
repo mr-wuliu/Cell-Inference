@@ -196,7 +196,6 @@ def pr_page(page=1):
         script_name = "cascade"
     model_name = script_name.split('.')[0]
     img_path = img_path + '/' + model_name
-    print(img_path)
     bbox_img_num = 0
     segm_img_num = 0
     dir_path = 'flaskr/static/' + img_path + '/coco_error_analysis'

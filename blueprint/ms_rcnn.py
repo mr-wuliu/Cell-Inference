@@ -70,14 +70,8 @@ cache_path = 'flaskr/cache/'
 
 @bp.route('/matrix')
 def matrix():
-    script_name = model.home
-    if script_name.startswith("cascade"):
-        script_name = "cascade"
-    model_name = script_name.split('.')[0]
-    file_name = 'img/confusion_matrix/' + model_name + '/confusion_matrix.png'
     # # 将结果传递给模板进行渲染
-    return render_template(model_name + '/matrix.html', model=model,
-                           file_name=file_name)
+    return render_template('ms_rcnn/matrix.html', model=model)
 
 @bp.route('/')
 def home():

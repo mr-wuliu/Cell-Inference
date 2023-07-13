@@ -126,9 +126,6 @@ def pr_page(page=1):
         if path == 'bbox':
             for bbox_img in os.listdir(dir_path + '/' + path):
                 cat = bbox_img.split('/')[-1].split('-')[1]
-                # print(bbox_img.split('/')[-1].split('-')[1])
-                # print(page)
-                # print(bbox_img.split('/')[-1].split('-')[1] == page)
                 if cat == page or (cat == 'allclass' and page == '6'):
                     bbox_img_num += 1
                     bbox_img_dir = (str(bbox_img_num), img_path + '/' + path + '/' + bbox_img)
@@ -217,7 +214,6 @@ def training():
         script = 'mmdetection/tools/train.py'
         args = [config,
                 '--work-dir', output]
-        # ' > ' + cache_path+key+'/log.txt']
         # 创建文件夹
 
         if not os.path.exists(output):
@@ -237,8 +233,6 @@ def training():
 def result():
     # 绘制各式图
     model_name = 'cascade-mask-rcnn'
-    # current_key = 'uvA4nQtShOcB'
-    # path = os.path.join(cache_path,'work_dir_'+current_key)
     path = 'flaskr/static/model/sample/' + model_name
     # 遍历文件夹, 搜索日期最新的文件
     folders = [folder for folder in os.listdir(path) if folder.startswith(tuple(str(i) for i in range(10)))]
