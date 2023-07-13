@@ -22,6 +22,7 @@ class model:
     training = 'mask_rcnn.training'
     result = 'mask_rcnn.result'
     pr_page = 'mask_rcnn.pr_page'
+    matrix = 'mask_rcnn.matrix'
 
 
 class Draw(utils.Draw):
@@ -39,7 +40,7 @@ class Draw(utils.Draw):
                 y_cls_data.append(d['loss_cls'])
                 y_bbox_data.append(d['loss_bbox'])
                 y_mask_data.append(d['loss_mask'])
-                y_centerness_data.append(d['acc'])
+                # y_centerness_data.append(d['acc'])
                 x_data.append(d['step'])
         line = (
             Line().add_xaxis(x_data)
@@ -47,7 +48,7 @@ class Draw(utils.Draw):
             .add_yaxis('loss_cls', y_cls_data)
             .add_yaxis('loss_bbox', y_bbox_data)
             .add_yaxis('loss_mask', y_mask_data)
-            .add_yaxis('acc', y_centerness_data)
+            # .add_yaxis('acc', y_centerness_data)
         )
         # change size
         line.width = '100%'
@@ -55,8 +56,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/mask-rcnn_r101_fpn_1x_coco.pth'
+config_file: str = 'flaskr/static/model/mask_rcnn_3x_train_b/mask-rcnn_r101_fpn_ms-poly-3x_coco.py'
+checkpoint_file: str = 'flaskr/static/model/mask_rcnn_3x_train_b/epoch_12.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -185,6 +186,8 @@ def result():
     img_list = []
     img_path = 'img/features/mask_rcnn'
     num_img = 0
+
+
     for img_f in os.listdir('flaskr/static/' + img_path):
         if img_f.startswith('combine'):
             elm = (str(num_img), img_path + '/' + img_f)
@@ -194,8 +197,6 @@ def result():
     # t_sne 展示
     class t_sne:
         path = 'img/t_sne/Mask R-CNN 3x t-sne.png'
-        text = '数据集经过Mask R-CNN 模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Mask R-CNN 1x T-SNE图'
 
     return render_template('mask_rcnn/result.html',
                            losses=loss_plot,
@@ -250,6 +251,27 @@ def pr_page(page=1):
                            img_list=img_list,
                            model=model)
 
+# @bp.route('/matrix', methods=['GET'])
+@bp.route('/matrix')
+def matrix():
+
+    #  # 初始化 confusion_matrix_file  判断是否有图片生成
+    # confusion_matrix_file = ''
+
+    # # 调用函数
+    # result = calculate_confusion_matrix(config_file, dateload_file, save_dir)
+
+    # # 检查调用结果
+    # if result is not None:
+    #     output = 'Confusion matrix calculated successfully.'
+    #     confusion_matrix_file = os.path.join(save_dir, 'matrix.png')
+    # else:
+    #     output = 'Error calculating confusion matrix.'
+    #     confusion_matrix_file = ''
+
+    # # 将结果传递给模板进行渲染
+    # return render_template('mask_rcnn/matrix.html',output=output,confusion_matrix_file=confusion_matrix_file, model=model)
+    return render_template('mask_rcnn/matrix.html', model=model)
 
 """
 接口请求
@@ -293,7 +315,7 @@ def pr_page_update():
                     print(segm_img_dir)
                     segm_img_list.append(segm_img_dir)
 
-    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+    img_list = {"bbox_img_list": bbox_img_list[::-1], "segm_img_list": segm_img_list[::-1]}
 
     return img_list
 

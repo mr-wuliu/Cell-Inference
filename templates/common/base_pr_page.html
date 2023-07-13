@@ -20,7 +20,7 @@
                                 (Category Type)
                             </a>
                             {#1: Neoplastic 2:Connective 3:Inflammatory 4:Non-Neoplasti Epithelial(Non-neo. Epi)  5:Dead#}
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" id="category-dropdown-menu">
                                 <li><a class="dropdown-item" href="#" data-value="Category 1:Neoplastic">Category
                                     1:Neoplastic</a>
                                 </li>
@@ -168,11 +168,17 @@
         // 声明全局变量并初始化
         var selected_category_value = '{{ selected_category_value }}';
         $(document).ready(function () {
-            // 监听下拉菜单选项的点击事件
-            $(".dropdown-menu a").click(function () {
+            // 监听指定id下拉菜单选项的点击事件：事件委托写法
+            // $("#category-dropdown-menu").on("click", "a.dropdown-item", function (event) {
+            // ...
+
+            // 直接监听click事件写法:
+            // .dropdown-item 是 <a> 元素的 class, 写为a.dropdown
+            $("#category-dropdown-menu a.dropdown-item").click(function (event) {
                 event.preventDefault(); // 阻止默认点击事件
                 // 获取选项的值
                 var selectedValue = $(this).data("value");
+                console.log(selectedValue)
                 var cat_number = 1
                 {#var encodedValue = encodeURIComponent(selectedValue);#}
                 if (selectedValue === "Category All") {

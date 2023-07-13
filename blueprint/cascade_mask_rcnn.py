@@ -13,6 +13,7 @@ bp = Blueprint('cascade_mask_rcnn', __name__)
 
 # 创建子进程列表，用于保存正在执行的子进程对象
 processes = {}
+current_key = ''
 
 
 # 定义单个模型的路由
@@ -22,6 +23,7 @@ class model:
     training = 'cascade_mask_rcnn.training'
     result = 'cascade_mask_rcnn.result'
     pr_page = 'cascade_mask_rcnn.pr_page'
+    matrix = 'cascade_mask_rcnn.matrix'
 
 
 # Draw 继承
@@ -34,21 +36,21 @@ class Draw(utils.Draw):
         y_bbox_data = []
         y_mask_data = []
         y_centerness_data = []
-        # for d in json_list:
-        #     if 'loss' in d:
-        #         y_data.append(d['loss'])
-        #         y_cls_data.append(d['loss_cls'])
-        #         y_bbox_data.append(d['loss_bbox'])
-        #         y_mask_data.append(d['loss_mask'])
-        #         y_centerness_data.append(d['acc'])
-        #         x_data.append(d['step'])
+        for d in json_list:
+            if 'loss' in d:
+                y_data.append(d['loss'])
+                y_cls_data.append(d['loss_rpn_cls'])
+                y_bbox_data.append(d['loss_rpn_bbox'])
+                y_mask_data.append(d['s0.loss_mask'])
+                y_centerness_data.append(d['s0.acc'])
+                x_data.append(d['step'])
         line = (
             Line().add_xaxis(x_data)
             .add_yaxis('loss', y_data)
-            .add_yaxis('loss_cls', y_cls_data)
-            .add_yaxis('loss_bbox', y_bbox_data)
-            .add_yaxis('loss_mask', y_mask_data)
-            .add_yaxis('acc', y_centerness_data)
+            .add_yaxis('loss_rpn_cls', y_cls_data)
+            .add_yaxis('loss_rpn_bbox', y_bbox_data)
+            .add_yaxis('s0.loss_mask', y_mask_data)
+            .add_yaxis('s0.acc', y_centerness_data)
         )
         # change size
         line.width = '100%'
@@ -56,8 +58,8 @@ class Draw(utils.Draw):
 
 
 # 模型配置文件
-config_file: str = 'flaskr/static/model/cascade-mask-rcnn_x101-64x4d_fpn_1x_coco.py'
-checkpoint_file: str = 'flaskr/static/model/cascade_epoch_12.pth'
+config_file: str = 'flaskr/static/model/cascade/cascade.py'
+checkpoint_file: str = 'flaskr/static/model/cascade/cascade.pth'
 # 缓存
 cache_path = 'flaskr/cache/'
 
@@ -188,7 +190,7 @@ def training():
             arguments[arg_key] = arg_val
 
         # 读取 config.f 文件
-        with open('flaskr/static/model/base/mask-rcnn_r101_fpn_ms-poly-3x_coco.f', 'r') as file:
+        with open('flaskr/static/model/base/cascade.f', 'r') as file:
             lines = file.readlines()
         file.close()
 
@@ -272,9 +274,7 @@ def result():
 
     # t_sne 展示
     class t_sne:
-        path = 'img/t_sne/' + model_name + '.png'
-        text = '数据集经过 Cascade Mask R-CNN模型推导, 获取其特征并使用T-SNE降维可视化.'
-        title = 'Cascade Mask R-CNN T-SNE图'
+        path = 'img/t_sne/Cascade Mask R-CNN t-sne.png'
 
     return render_template('cascade_mask_rcnn/result.html',
                            losses=loss_plot,
@@ -282,6 +282,19 @@ def result():
                            seg_map=seg_map_plot, img_list=img_list,
                            t_sne=t_sne, loss_title='Cascade Mask R-CNN Loss',
                            model=model)
+
+
+# @bp.route('/matrix', methods=['GET'])
+@bp.route('/matrix')
+def matrix():
+    script_name = model.home
+    if script_name.startswith("cascade"):
+        script_name = "cascade"
+    model_name = script_name.split('.')[0]
+    file_name = 'img/confusion_matrix/' + model_name + '/confusion_matrix.png'
+    # # 将结果传递给模板进行渲染
+    return render_template('cascade_mask_rcnn/matrix.html', model=model,
+                           file_name=file_name)
 
 
 """
@@ -332,7 +345,7 @@ def pr_page_update():
                     print(segm_img_dir)
                     segm_img_list.append(segm_img_dir)
 
-    img_list = {"bbox_img_list": bbox_img_list, "segm_img_list": segm_img_list}
+    img_list = {"bbox_img_list": bbox_img_list[::-1], "segm_img_list": segm_img_list[::-1]}
     img_id_list = {"img_segm": "img_segm", "img_bbox": "img_bbox"}
 
     return img_list

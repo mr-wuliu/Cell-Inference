@@ -1,33 +1,35 @@
 {% extends 'common/base.html' %}
 
 {% block main %}
+    <div class="containe">
+    <div class="row">
+        <div class="col-md-2"></div>
 
-    <div class="col-lg-6 col-md-6 mb-4">
-        <div class="image-container">
-            <img id="upload_img" class="img-fluid" width="512" height="512"
-                 src="{{ url_for('static',filename='img/choose_pic.png') }}" alt="Image 1">
-            <input class="file-upload" style="display: none" type="file" accept="image/*" name="upload_img"/>
-        </div>
-    </div>
-
-    <div class="col-lg-6 col-md-6 mb-4">
-        <div class="image-container">
-            <img id="download_img" class="img-fluid" width="512" height="512"
-                 src="{{ url_for('static',filename='img/result.png') }}" alt="Image 2">
-        </div>
-    </div>
-
-
-    <div class="container">
-        <div class="row">
-            <div class="col-md-5 d-flex justify-content-end">
-                <button type="button" class="btn btn-primary " id="btn_upload">上传图片</button><!--mx-auto -->
+        <div class="card" style="width: 35rem;">
+            <div class="card-img-top">
+                <img id="upload_img" class="img-fluid" width="512" height="512"
+                     src="{{ url_for('static',filename='img/choose_pic.png') }}" alt="Image 1">
+                <input class="file-upload" style="display: none" type="file" accept="image/*" name="upload_img"/>
             </div>
-            <div class="col-md-1"></div>
-            <div class="col-md-6">
-                <button id="btn_download" class="btn btn-primary" type="button">请求图片</button>
+            <div class="card-body">
+                <p class="card-text">图片预览</p>
+                <a href="#" id="btn_upload" class="btn btn-primary">推理</a>
             </div>
         </div>
+
+        <div class="card" style="width: 35rem;">
+            <div class="image-container">
+                <img id="download_img" class="img-fluid" width="512" height="512"
+                     src="{{ url_for('static',filename='img/result.png') }}" alt="Image 2">
+            </div>
+            <div class="card-body">
+                <p class="card-text">推理结果展示</p>
+                <a href="#" id="btn_download" class="btn btn-primary">请求图片</a>
+            </div>
+        </div>
+
+
+    </div>
     </div>
 
 {% endblock %}

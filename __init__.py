@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, render_template
-from flaskr.blueprint import home, mask_rcnn, condinst, cascade_mask_rcnn
+from flaskr.blueprint import home, mask_rcnn, condinst, cascade_mask_rcnn, ms_rcnn, solo
 
 
 def create_app():
@@ -34,6 +34,8 @@ def register_blueprint(app: Flask):
     app.register_blueprint(mask_rcnn.bp, url_prefix='/maskrcnn')
     app.register_blueprint(condinst.bp, url_prefix='/condinst')
     app.register_blueprint(cascade_mask_rcnn.bp, url_prefix='/cascade_mask_rcnn')
+    app.register_blueprint(ms_rcnn.bp, url_prefix='/ms_rcnn')
+    app.register_blueprint(solo.bp, url_prefix='/solo')
     app.add_url_rule('/', endpoint='home')
 
 
